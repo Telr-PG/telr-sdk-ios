@@ -3,7 +3,7 @@
 src='https://github.com/telrsdk/TelrSDK/blob/master/Example/TelrSDK/Images.xcassets/logo.imageset/Telr-logo-green-rgb-2000w.png' width="200"/>
 </p>
 
-# Telr iOS Payment SDK
+# Telr iOS SDK
 
 [![Version](https://img.shields.io/cocoapods/v/TelrSDK.svg?style=flat)](https://cocoapods.org/pods/TelrSDK)
 [![License](https://img.shields.io/cocoapods/l/TelrSDK.svg?style=flat)](https://cocoapods.org/pods/TelrSDK)
@@ -19,7 +19,7 @@ Use this [link](https://docs.telr.com/reference/ios) to get started.
 
 ## Requirements
 
-The Telr iOS SDK requires Xcode 11 or later and is compatible with apps targeting iOS 9 or above. We support Catalyst on macOS 10.15 or later. 
+Telr iOS SDK requires Xcode 11 or later and is compatible with apps targeting iOS 9 or above. We support Catalyst on macOS 10.15 or later. 
 
 ## Example
 
@@ -27,7 +27,7 @@ To run the example project, clone the repo, and run `pod install` from the Examp
 
 ## Installation
 
-TelrSDK is available through [CocoaPods](https://cocoapods.org). To install
+The SDK is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
 ```ruby
@@ -319,10 +319,10 @@ extension ViewController{
 }
 ```
 
-## Author
+## Support
 
-Telr SDK, support@telr.com
+If you have questions or need help with the SDK please contact support@telr.com.
 
 ## License
 
-TelrSDK is available under the MIT license. See the LICENSE file for more info.
+This repository is available under the [MIT license](LICENSE).
