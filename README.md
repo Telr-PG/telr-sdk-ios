@@ -9,13 +9,7 @@ src='https://github.com/telrsdk/TelrSDK/blob/master/Example/TelrSDK/Images.xcass
 [![License](https://img.shields.io/cocoapods/l/TelrSDK.svg?style=flat)](https://cocoapods.org/pods/TelrSDK)
 [![Platform](https://img.shields.io/cocoapods/p/TelrSDK.svg?style=flat)](https://cocoapods.org/pods/TelrSDK)
 
-Our mission is to build connections that remove fragmentation in the e-commerce ecosystem. We make these connections to enable our customers to go cashless, digitising the way that they accept payments.
-
-## Getting Started
-
-Use this [link](https://docs.telr.com/reference/ios) to get started.
-
-![](https://github.com/telrsdk/TelrSDK/blob/master/Example/TelrSDK/demo.gif)
+This SDK enables you to accept payments in your iOS app. You can find our documentation [here](https://docs.telr.com).
 
 ## Requirements
 
@@ -321,7 +315,7 @@ extension ViewController{
 
 ## Support
 
-If you have questions or need help with the SDK please contact support@telr.com.
+If you have questions or need help, please contact support@telr.com.
 
 ## License
 
