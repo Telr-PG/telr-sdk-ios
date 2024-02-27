@@ -3,47 +3,25 @@
 src='https://github.com/telrsdk/TelrSDK/blob/master/Example/TelrSDK/Images.xcassets/logo.imageset/Telr-logo-green-rgb-2000w.png' width="200"/>
 </p>
 
-# TelrSDK- Updated
-
+# Telr iOS SDK
 
 [![Version](https://img.shields.io/cocoapods/v/TelrSDK.svg?style=flat)](https://cocoapods.org/pods/TelrSDK)
 [![License](https://img.shields.io/cocoapods/l/TelrSDK.svg?style=flat)](https://cocoapods.org/pods/TelrSDK)
 [![Platform](https://img.shields.io/cocoapods/p/TelrSDK.svg?style=flat)](https://cocoapods.org/pods/TelrSDK)
 
-
-Our mission is to build connections that remove fragmentation in the e-commerce ecosystem. We make these connections to enable our customers to go cashless, digitising the way that they accept payments.
-Use this  [link](https://telr.com/about-telr/) to started.
-
-## Getting Started
-
-Use this  [link](https://telr.com/support/article-categories/getting-started/) to started.
-
-![](https://github.com/telrsdk/TelrSDK/blob/master/Example/TelrSDK/demo.gif)
-
-## Register with Telr
-
-Use this  [link](https://telr.com/support/knowledge-base/admin-system/) to find the step to register in our system.
+This SDK enables you to accept payments in your iOS app. You can find our documentation [here](https://docs.telr.com).
 
 ## Requirements
 
-The Telr iOS SDK requires Xcode 11 or later and is compatible with apps targeting iOS 9 or above. We support Catalyst on macOS 10.15 or later. 
-
-
-## Custom Installation
-
-Use this  [link](https://telr.com/support/knowledge-base/mobile-api-integration-guide/) to find the custom api.
-
-
+Telr iOS SDK requires Xcode 11 or later and is compatible with apps targeting iOS 9 or above. We support Catalyst on macOS 10.15 or later. 
 
 ## Example
 
 To run the example project, clone the repo, and run `pod install` from the Example directory first.
 
-
-
 ## Installation
 
-TelrSDK is available through [CocoaPods](https://cocoapods.org). To install
+The SDK is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
 ```ruby
@@ -153,9 +131,7 @@ extension ViewController:TelrControllerDelegate{
         //To save the card for future transactions, you will be required to store tranRef. 
         //When the customer will be attempting transaction using the previously used card tranRef will be used
         
-        self.displaySavedCard()
-      
-      
+        self.displaySavedCard() 
     }
     
     //Mark:- This method will be called when user clicks on cancel button and the
@@ -163,16 +139,13 @@ extension ViewController:TelrControllerDelegate{
     func didPaymentFail(messge: String) {
         print("didPaymentFail  \(messge)")
         
-    }
-    
-   
-        
+    }     
 }
 
 ```
 
 ## Saved cards
-### (It works locally using user default. Masked Card details will be deleted when app is deleted)
+It works locally using user default. Masked Card details will be deleted when app is deleted
 ```python
 
 //Mark:- This returns masked card details of saved card.
@@ -180,7 +153,7 @@ let savedCard = TelrResponseModel().getSavedCards()
 
 ```
 
-## To use Saved Card without CVV, please use below code while binding the payment request
+### To use Saved Card without CVV, please use below code while binding the payment request
 ```python
 
 //Mark:- Set type as ‘sale’, class as ‘cont’ and send previous transaction reference in ‘ref’ parameter
@@ -191,11 +164,10 @@ paymentReq.transRef = lastresponse.transRef ?? ""
 
 ```
 
-## To use Saved Card with CVV, please use below code while binding the payment request
+### To use Saved Card with CVV, please use below code while binding the payment request
 ```python
 
 //Mark:- Set type as ‘paypage’ and class as ‘ecom’ and send previous transaction reference in ‘firstref’ parameter
-
 
 paymentReq.transType = "paypage"
 paymentReq.transClass = "ecom"
@@ -338,55 +310,13 @@ extension ViewController{
         return paymentReq
 
      }
-
-
 }
-
-
 ```
-## Authorisation response
 
-| Field  | Description |
-| :------------- | :------------- |
-| status  | Authorisation status. A indicates an authorised transaction. H also indicates an authorised transaction, but where the transaction has been placed on hold. Any other value indicates that the request could not be processed.  |
-| code  | If the transaction was authorised, this contains the authorisation code from the card issuer. Otherwise it contains a code indicating why the transaction could not be processed.  |
-| message  | The authorisation or processing error message.  |
-|  tranref  | The payment gateway transaction reference allocated to this request.  |
-| cvv  | Result of the CVV check: Y = CVV matched OK N = CVV not matched X = CVV not checked E = Error, unable to check CVV  |
-| avs  | Result of the AVS check: Y = AVS matched OK P = Partial match (for example, post-code only) N = AVS not matched X = AVS not checked E = Error, unable to check AVS  |
-| cardcode  | Code to indicate the card type used in the transaction. See the code list at the end of the document for a list of card codes. |
-| cardlast4  | The last 4 digits of the card number used in the transaction. This is supplied for all payment types (including the Hosted Payment Page method) except for PayPal. |
+## Support
 
-
-## Test Cards
-
-These card numbers can be used when testing your integration to the payment gateway. These cards will not work for live transactions.
-
-
-| Card number  | Type  | CVV | MPI |
-| :------------ |:---------------|:-----|:-----|
-| 4111 1111 1111 1111 | Visa | 123 | Yes |
-| 4444 3333 2222 1111 | Visa | 123 | Yes |
-| 4444 4244 4444 4440 | Visa | 123 | Yes |
-| 4444 4444 4444 4448 | Visa | 123 | Yes |
-| 4012 8888 8888 1881 | Visa | 123 | Yes |
-| 5105 1051 0510 5100 | Mastercard | 123 | No |
-| 5454 5454 5454 5454 | Mastercard | 123 | Yes |
-| 5555 5555 5555 4444 | Mastercard | 123 | Yes |
-| 5555 5555 5555 5557 | Mastercard | 123 | Yes |
-| 5581 5822 2222 2229 | Mastercard | 123 | Yes |
-| 5641 8209 0009 7002 | Maestro UK | 123 | Yes |
-| 6767 0957 4000 0005 | Solo | 123 | No |
-| 3434 343434 34343 | American Express | 1234 | No |
-| 3566 0020 2014 0006 | JCB | 123 | No |
-
-
-
-
-## Author
-
-Telr SDK, support@telr.com
+If you have questions or need help, please contact support@telr.com.
 
 ## License
 
-TelrSDK is available under the MIT license. See the LICENSE file for more info.
+This repository is available under the [MIT license](LICENSE).
