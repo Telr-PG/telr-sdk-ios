@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'TelrSDK'
-  s.version          = '2.9.1'
+  s.version          = '2.9.2'
   s.summary          = 'We’re an award-winning payment aggregator+ provider.'
 
 # This description is used to generate tags and improve search results.
