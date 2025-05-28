@@ -170,7 +170,13 @@ public class TelrController: UIViewController, XMLParserDelegate {
         webView.scrollView.maximumZoomScale = 1.0;
        
         viewBack.addSubview(webView)
-        
+
+        NSLayoutConstraint.activate([
+            webView.topAnchor.constraint(equalTo: viewBack.topAnchor),
+            webView.bottomAnchor.constraint(equalTo: viewBack.bottomAnchor),
+            webView.leadingAnchor.constraint(equalTo: viewBack.leadingAnchor),
+            webView.trailingAnchor.constraint(equalTo: viewBack.trailingAnchor)
+        ])
        
         self.view.addSubview(viewBack)
         
@@ -565,6 +571,7 @@ public class TelrController: UIViewController, XMLParserDelegate {
                         <zip>\(paymentRequest.zip)</zip>
                     </address>
                 </billing>
+                <custref>\(paymentRequest.api_custref)</custref>
                 <repeat>
                         <amount>\(paymentRequest.repeat_amount)</amount>
                         <interval>\(paymentRequest.repeat_interval)</interval>
@@ -651,9 +658,10 @@ extension TelrController : WKNavigationDelegate, WKUIDelegate, UIScrollViewDeleg
     
      public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         
-        actInd?.startAnimating()
-        
-        actInd?.isHidden = false
+        if navigationAction.navigationType == .linkActivated || navigationAction.navigationType == .formSubmitted {
+            actInd?.startAnimating()
+            actInd?.isHidden = false
+        }
         
         decisionHandler(.allow)
 

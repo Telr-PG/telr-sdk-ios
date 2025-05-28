@@ -592,6 +592,7 @@ extension ViewController{
         
 //        Split Payment ID
         paymentReq.split_id = "105"
+        paymentReq.api_custref = "11111"
     
         return paymentReq
 
