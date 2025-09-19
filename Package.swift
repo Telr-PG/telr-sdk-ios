@@ -1,4 +1,5 @@
 // swift-tools-version:5.3
+
 import PackageDescription
 
 let package = Package(
@@ -10,8 +11,8 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "MobilePaymentSDK",
-            url: "https://github.com/Telr-PG/telr-sdk-ios/releases/download/0.0.15/MobilePaymentSDK.xcframework.zip",
-            checksum: "638de5daddb6d3a8037704d862896f9f66d0c4fed92632704bb18d2f4b631061"
+            url: "https://github.com/Telr-PG/telr-sdk-ios/releases/download/0.0.16/MobilePaymentSDK.xcframework.zip",
+            checksum: "8bafe8b64278c997f880db1c1187d4fbb0edee78e2ba0f97dd4e61089b71f183"
         )
     ]
 )
