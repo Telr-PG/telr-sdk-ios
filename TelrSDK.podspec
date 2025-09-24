@@ -1,12 +1,12 @@
 Pod::Spec.new do |s|
   s.name             = 'TelrSDK'
-  s.version          = '0.0.19'
+  s.version          = '0.0.20'
   s.summary          = 'Telr iOS Payment SDK - accept payments seamlessly'
   s.homepage         = 'https://github.com/Telr-PG/telr-sdk-ios'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.authors          = {"Your Company":"support@telr.com"}
-  s.source           = { :git => 'https://github.com/Telr-PG/telr-sdk-ios.git', :tag => '0.0.19' }
-  s.vendored_frameworks = 'Releases/ios-v0.0.19/MobilePaymentSDK.xcframework'
-  s.platform         = :ios, '18.5'
+  s.source           = { :git => 'https://github.com/Telr-PG/telr-sdk-ios.git', :tag => '0.0.20' }
+  s.vendored_frameworks = 'Releases/ios-v0.0.20/MobilePaymentSDK.xcframework'
+  s.platform         = :ios, '15.1'
   s.swift_version    = '6.0'
 end
