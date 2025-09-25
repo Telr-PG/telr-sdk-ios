@@ -1,322 +1,666 @@
-<p align="center">
-<img
-src='https://github.com/telrsdk/TelrSDK/blob/master/Example/TelrSDK/Images.xcassets/logo.imageset/Telr-logo-green-rgb-2000w.png' width="200"/>
-</p>
+# Telr Mobile Payment SDK - iOS Merchant Documentation
 
-# Telr iOS SDK
+<div align="center">
+  <img src="docs/assets/images/telr-header.svg" alt="Telr Mobile Payment SDK" width="100%">
+</div>
 
-[![Version](https://img.shields.io/cocoapods/v/TelrSDK.svg?style=flat)](https://cocoapods.org/pods/TelrSDK)
-[![License](https://img.shields.io/cocoapods/l/TelrSDK.svg?style=flat)](https://cocoapods.org/pods/TelrSDK)
-[![Platform](https://img.shields.io/cocoapods/p/TelrSDK.svg?style=flat)](https://cocoapods.org/pods/TelrSDK)
+## Table of Contents
 
-This SDK enables you to accept payments in your iOS app. You can find our documentation [here](https://docs.telr.com).
+1. [Overview](#overview)
+2. [Installation](#installation)
+3. [Quick Start](#quick-start)
+4. [Configuration](#configuration)
+5. [Payment Methods](#payment-methods)
+6. [Error Handling](#error-handling)
+7. [Internationalization](#internationalization)
+8. [Troubleshooting](#troubleshooting)
+9. [API Reference](#api-reference)
+10. [Support](#support)
 
-## Requirements
+## Overview
 
-Telr iOS SDK requires Xcode 11 or later and is compatible with apps targeting iOS 9 or above. We support Catalyst on macOS 10.15 or later. 
+The Telr Mobile Payment SDK for iOS is a comprehensive payment solution that enables merchants to accept payments seamlessly within their iOS applications. Built with SwiftUI and following modern iOS development patterns, it provides a clean, secure, and customizable payment experience.
 
-## Example
+### Key Features
 
-To run the example project, clone the repo, and run `pod install` from the Example directory first.
+- **Multiple Payment Methods**: Credit/Debit Cards, Apple Pay
+- **3D Secure Support**: Built-in 3DS authentication flow
+- **Saved Cards**: Tokenization and card management
+- **Modern UI**: SwiftUI-based interface with iOS design guidelines
+- **Internationalization**: Multi-language support (English, Arabic)
+- **Security**: PCI DSS compliant with tokenization
+- **Accessibility**: Full accessibility support for inclusive design
+
+### Requirements
+
+- iOS 15.1+
+- Swift 6.0+
+- Xcode 15.0+
+- CocoaPods 1.11+ (if using CocoaPods)
 
 ## Installation
 
-The SDK is available through [CocoaPods](https://cocoapods.org). To install
-it, simply add the following line to your Podfile:
+### CocoaPods (Recommended)
+
+1. **Install CocoaPods** (if not already installed):
+   ```bash
+   sudo gem install cocoapods
+   ```
+
+2. **Create or update your Podfile**:
+   ```ruby
+   platform :ios, '15.1'
+   
+   use_frameworks!
+   inhibit_all_warnings!
+   
+   target 'YourAppTarget' do
+     pod 'TelrSDK', '~> 0.0.20'
+   end
+   ```
+
+3. **Install the SDK**:
+   ```bash
+   pod install
+   ```
+
+4. **Open the workspace**:
+   ```bash
+   open YourApp.xcworkspace
+   ```
+
+5. **Import the SDK** in your Swift files:
+   ```swift
+   import MobilePaymentSDK
+   ```
+
+#### CocoaPods Troubleshooting
+
+If you encounter build issues with newer Xcode versions, add this to your Podfile:
 
 ```ruby
-
-pod 'TelrSDK', "2.9.2"
-
+post_install do |installer|
+  installer.pods_project.targets.each do |t|
+    t.build_configurations.each do |config|
+      config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
+    end
+  end
+  installer.aggregate_targets.each do |t|
+    t.user_project.native_targets.each do |nt|
+      nt.build_configurations.each do |config|
+        config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
+      end
+    end
+  end
+end
 ```
 
-Make sure you import the sdk where you want use it using below code
+### Swift Package Manager
 
-```ruby
-import TelrSDK
-```
-Use this to set the details of store. Make sure you are using your store details
+#### Via Xcode (Recommended)
 
-```ruby
+1. In Xcode, go to **File > Add Package Dependencies**
+2. Enter the repository URL: `https://github.com/Telr-PG/telr-sdk-ios`
+3. Select version rule (e.g., "Up to Next Major") and pick release (e.g., 0.0.20)
+4. Add the product `MobilePaymentSDK` to your target
 
-let tabbyKEY:String = "<Tabby_Key_String>"
+#### Via Package.swift
 
-let KEY:String = " <YOUR_STORE_AUTH_KEY>" // TODO fill key
-let STOREID:String = "<YOUR_STORE_ID>"  // TODO fill store id
-let EMAIL:String = "<YOUR_EMAIL>" // TODO fill email id
+```swift
+// swift-tools-version: 6.0
+import PackageDescription
 
-```
-
-## To call the payment page you can use either of the two methods
-
-```python
-
-//Mark:-If you want to change the back button as custom back button on navigation
-let customBackButton = UIButton(type: .custom)
-customBackButton.setTitle("Back", for: .normal)
-customBackButton.setTitleColor(.black, for: .normal)
-
-//Mark:-Use this to push the telr payment page.
-paymentRequest = preparePaymentRequest()
-let telrController = TelrController()
-telrController.delegate = self
-telrController.customBackButton = customBackButton
-telrController.paymentRequest = paymentRequest!
-self.navigationController?.pushViewController(telrController, animated: true)
-
-//Mark:-Use this to present the telr payment page.
-paymentRequest = preparePaymentRequestSaveCard(lastresponse: cardDetails)
-let telrController = TelrController()
-telrController.delegate = self
-telrController.paymentRequest = paymentRequest!
-let nav = UINavigationController(rootViewController: telrController)
-self.navigationController?.present(nav, animated: true, completion: nil)
-
+let package = Package(
+    name: "YourApp",
+    platforms: [
+        .iOS(.v15)
+    ],
+    dependencies: [
+        .package(url: "https://github.com/Telr-PG/telr-sdk-ios.git", .upToNextMajor(from: "0.0.20"))
+    ],
+    targets: [
+        .target(
+            name: "YourApp",
+            dependencies: [
+                .product(name: "MobilePaymentSDK", package: "telr-sdk-ios")
+            ]
+        )
+    ]
+)
 ```
 
+### Carthage
 
-## Delegate method for get response from payment gateway
+1. **Add to Cartfile**:
+   ```ogdl
+   binary "https://raw.githubusercontent.com/Telr-PG/telr-sdk-ios/main/MobilePaymentSDK.json" ~> 0.0.20
+   ```
 
-```python
+2. **Update dependencies**:
+   ```bash
+   carthage update --use-xcframeworks --platform iOS
+   ```
 
-//Mark:-This call when the payment is cancelled by user
-func didPaymentCancel()
-//Mark:-This call when the payment is successful.
-func didPaymentSuccess(response:TelrResponseModel)
-//Mark:-This call when the payment is declined due to any reason.
-func didPaymentFail(messge:String)
+3. **Add to Xcode**:
+   - Drag `Carthage/Build/MobilePaymentSDK.xcframework` into your project
+   - Set to "Embed & Sign" in Frameworks, Libraries, and Embedded Content
 
+### Manual Installation
 
-```
+1. **Download the framework**:
+   - Download `MobilePaymentSDK.xcframework.zip` from [Releases](https://github.com/Telr-PG/telr-sdk-ios/releases)
+   - Unzip to get `MobilePaymentSDK.xcframework`
 
-Also confirm the delegate methods
+2. **Add to Xcode**:
+   - Drag the framework into your project navigator
+   - Check "Copy items if needed" and select your target
+   - Set to "Embed & Sign" in project settings
 
-```ruby
-extension ViewController:TelrControllerDelegate{
+## Quick Start
+
+### Basic Implementation
+
+```swift
+import SwiftUI
+import MobilePaymentSDK
+
+struct PaymentView: View {
+    @State private var showPayment = false
+    private let paymentSDK = PaymentSDK()
     
-    
-    //Mark:- This method will be called when user clicks on back button
-    func didPaymentCancel() {
-        print("didPaymentCancel")
-        
+    var body: some View {
+        VStack {
+            Button("Pay Now") {
+                showPayment = true
+            }
+        }
+        .fullScreenCover(isPresented: $showPayment) {
+            paymentSDK.paymentView(
+                tokenURL: "https://api.telr.com/token",
+                orderURL: "https://api.telr.com/order/123",
+                onFinish: { response in
+                    if response.success {
+                        print("Payment successful: \(response.message)")
+                    } else {
+                        print("Payment failed: \(response.message)")
+                    }
+                    showPayment = false
+                }
+            )
+        }
     }
-    
-    //Mark:- This method will be called when the payment is completed successfully
-    func didPaymentSuccess(response: TelrResponseModel) {
-        
-        print("didPaymentSuccess")
-           
-        print("month \(String(describing: response.month))")
-           
-        print("year \(String(describing: response.year))")
-              
-        print("Trace \(String(describing: response.trace))")
-        
-        print("Status \(String(describing: response.status))")
-        
-        print("Avs \(String(describing: response.avs))")
-        
-        print("Code \(String(describing: response.code))")
-        
-        print("Ca_valid \(String(describing: response.ca_valid))")
-        
-        print("Card Code \(String(describing: response.cardCode))")
-        
-        print("Card Last4 \(String(describing: response.cardLast4))")
-        
-        print("CVV \(String(describing: response.cvv))")
-        
-        print("TransRef \(String(describing: response.transRef))")
-        
-        //To save the card for future transactions, you will be required to store tranRef. 
-        //When the customer will be attempting transaction using the previously used card tranRef will be used
-        
-        self.displaySavedCard() 
-    }
-    
-    //Mark:- This method will be called when user clicks on cancel button and the
-    payment gets failed
-    func didPaymentFail(messge: String) {
-        print("didPaymentFail  \(messge)")
-        
-    }     
-}
-
-```
-
-## Saved cards
-It works locally using user default. Masked Card details will be deleted when app is deleted
-```python
-
-//Mark:- This returns masked card details of saved card.
-let savedCard = TelrResponseModel().getSavedCards()
-
-```
-
-### To use Saved Card without CVV, please use below code while binding the payment request
-```python
-
-//Mark:- Set type as ‘sale’, class as ‘cont’ and send previous transaction reference in ‘ref’ parameter
-
-paymentReq.transType = "sale"
-paymentReq.transClass = "cont"
-paymentReq.transRef = lastresponse.transRef ?? ""
-
-```
-
-### To use Saved Card with CVV, please use below code while binding the payment request
-```python
-
-//Mark:- Set type as ‘paypage’ and class as ‘ecom’ and send previous transaction reference in ‘firstref’ parameter
-
-paymentReq.transType = "paypage"
-paymentReq.transClass = "ecom"
-paymentReq.transFirstRef = lastresponse.transFirstRef ?? ""
-
-```
-
-## Payment request builder for both saved card and new card
-
-```python
-
-//Mark:- Payment Request Builder
-extension ViewController{
-    
-    private func preparePaymentRequest() -> PaymentRequest{
-    
-    
-        let paymentReq = PaymentRequest()
-    
-        paymentReq.key = KEY
-   
-        paymentReq.store = STOREID
-    
-        paymentReq.appId = "123456789"
-   
-        paymentReq.appName = "TelrSDK"
-    
-        paymentReq.appUser = "123456"
-    
-        paymentReq.appVersion = "0.0.1"
-    
-        paymentReq.transTest = "1"//0
-   
-        paymentReq.transType = "paypage"
-   
-        paymentReq.transClass = "ecom"
-    
-        paymentReq.transCartid = String(arc4random())
-    
-        paymentReq.transDesc = "Test API"
-    
-        paymentReq.transCurrency = "AED"
-    
-        paymentReq.transAmount = amountTxt.text!
-    
-        paymentReq.billingEmail = EMAIL
-        
-        paymentReq.billingPhone = "8888888888"
-    
-        paymentReq.billingFName = self.firstNameTxt.text!
-    
-        paymentReq.billingLName = self.lastNameTxt.text!
-    
-        paymentReq.billingTitle = "Mr"
-    
-        paymentReq.city = "Dubai"
-    
-        paymentReq.country = "AE"
-    
-        paymentReq.region = "Dubai"
-    
-        paymentReq.address = "line 1"
-        
-        paymentReq.zip = "414202"
-    
-        paymentReq.language = "en"
-    
-        return paymentReq
-
-    }
-    
-    private func preparePaymentRequestSaveCard(lastresponse:TelrResponseModel) -> PaymentRequest{
-
-     
-        let paymentReq = PaymentRequest()
-     
-        paymentReq.key = lastresponse.key ?? ""
-     
-        paymentReq.store = lastresponse.store ?? ""
-     
-        paymentReq.appId = lastresponse.appId ?? ""
-     
-        paymentReq.appName = lastresponse.appName ?? ""
-     
-        paymentReq.appUser = lastresponse.appUser ?? ""
-     
-        paymentReq.appVersion = lastresponse.appVersion ?? ""
-     
-        paymentReq.transTest = lastresponse.transTest ?? ""
-        
-//        //Mark:- Without CVV
-//
-//        paymentReq.transType = "sale"
-//
-//        paymentReq.transClass = "cont"
-        
-//        paymentReq.transRef = lastresponse.transRef ?? ""
-        
-        
-        //Mark:- With CVV
-
-        paymentReq.transType = "paypage"
-
-        paymentReq.transClass = "ecom"
-        
-        paymentReq.transFirstRef = lastresponse.transFirstRef ?? ""
-        
-        //
-        
-        paymentReq.transCartid = String(arc4random())
-     
-        paymentReq.transDesc = lastresponse.transDesc ?? ""
-     
-        paymentReq.transCurrency = lastresponse.transCurrency ?? ""
-     
-        paymentReq.billingFName = lastresponse.billingFName ?? ""
-     
-        paymentReq.billingLName = lastresponse.billingLName ?? ""
-     
-        paymentReq.billingTitle = lastresponse.billingTitle ?? ""
-     
-        paymentReq.city = lastresponse.city ?? ""
-     
-        paymentReq.country = lastresponse.country ?? ""
-     
-        paymentReq.region = lastresponse.region ?? ""
-     
-        paymentReq.address = lastresponse.address ?? ""
-        
-        paymentReq.zip = lastresponse.zip ?? ""
-     
-        paymentReq.transAmount = amountTxt.text!
-            
-        paymentReq.billingEmail = lastresponse.billingEmail ?? ""
-     
-        paymentReq.billingPhone = lastresponse.billingPhone ?? ""
-     
-        paymentReq.language = "en"
-     
-        return paymentReq
-
-     }
 }
 ```
+
+### UIKit Integration
+
+```swift
+import UIKit
+import MobilePaymentSDK
+
+class PaymentViewController: UIViewController {
+    private let paymentSDK = PaymentSDK()
+    
+    func showPayment() {
+        let paymentView = paymentSDK.paymentView(
+            tokenURL: "https://api.telr.com/token",
+            orderURL: "https://api.telr.com/order/123",
+            onFinish: { response in
+                DispatchQueue.main.async {
+                    if response.success {
+                        self.showAlert(title: "Success", message: response.message)
+                    } else {
+                        self.showAlert(title: "Error", message: response.message)
+                    }
+                }
+            }
+        )
+        
+        let hostingController = UIHostingController(rootView: paymentView)
+        present(hostingController, animated: true)
+    }
+    
+    private func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+}
+```
+
+## Configuration
+
+### Basic Configuration
+
+```swift
+let configuration = PaymentSDKConfiguration(
+    maxRetries: 1,
+    debugLoggingEnabled: false,
+    preferredLanguageCode: "en"
+)
+
+let paymentSDK = PaymentSDK(configuration: configuration)
+```
+
+### Builder Pattern Configuration
+
+```swift
+let configuration = PaymentSDKConfiguration.builder()
+    .withMaxRetries(1)
+    .withDebugLoggingEnabled(true) // Enable for development
+    .withPreferredLanguageCode("ar") // Arabic support
+    .build()
+
+let paymentSDK = PaymentSDK(configuration: configuration)
+```
+
+### Configuration Options
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `maxRetries` | Int | `1` | Maximum retry attempts for failed requests |
+| `debugLoggingEnabled` | Bool | `false` | Enable debug logging (development only) |
+| `preferredLanguageCode` | String? | `nil` | Override language ("en", "ar") |
+
+### Runtime Configuration Updates
+
+```swift
+// Update configuration at runtime
+let newConfig = PaymentSDKConfiguration.builder()
+    .withPreferredLanguageCode("ar")
+    .build()
+
+paymentSDK.updateConfiguration(newConfig)
+```
+
+**Note**: Views already created with `paymentView` will not automatically pick up configuration changes. Create a new view after updating configuration if you need the new config applied.
+
+## Payment Methods
+
+### Supported Payment Methods
+
+The SDK supports the following payment methods:
+
+1. **Credit/Debit Cards**
+   - Visa, Mastercard, American Express
+   - 3D Secure authentication
+   - Card tokenization for future payments
+
+2. **Apple Pay**
+   - Native Apple Pay integration
+   - Touch ID/Face ID authentication
+   - Secure element processing
+
+### Card Payment Features
+
+#### New Card Payment
+- Real-time card validation
+- BIN lookup for card scheme detection
+- CVV and expiry validation
+- Cardholder name validation
+
+#### Saved Cards
+- Tokenized card storage
+- Quick payment with saved cards
+- Card management (view/delete)
+
+#### 3D Secure Authentication
+- Automatic 3DS challenge handling
+- WebView-based authentication flow
+- Seamless user experience
+
+### Apple Pay Integration
+
+Apple Pay is automatically available when:
+- Device supports Apple Pay
+- User has cards in Wallet
+- Merchant has Apple Pay enabled
+
+The SDK handles Apple Pay availability detection and presents the option when appropriate.
+
+## Error Handling
+
+### SDK Response Format
+
+All payment operations return a standardized response:
+
+```swift
+public struct SDKPaymentResponse {
+    public let success: Bool
+    public let message: String
+    public let errorCode: String?
+}
+```
+
+### Common Error Scenarios
+
+#### Network Errors
+```swift
+.onFinish { response in
+    if !response.success {
+        switch response.errorCode {
+        case "NETWORK_ERROR":
+            // Handle network connectivity issues
+            break
+        case "TIMEOUT":
+            // Handle request timeout
+            break
+        case "SERVER_ERROR":
+            // Handle server-side errors
+            break
+        default:
+            // Handle other errors
+            break
+        }
+    }
+}
+```
+
+#### Payment Failures
+```swift
+.onFinish { response in
+    if !response.success {
+        // Payment failed
+        print("Payment failed: \(response.message)")
+        print("Error code: \(response.errorCode ?? "Unknown")")
+        
+        // Show user-friendly error message
+        showErrorAlert(message: response.message)
+    } else {
+        // Payment successful
+        print("Payment successful: \(response.message)")
+        showSuccessAlert(message: response.message)
+    }
+}
+```
+
+### Error Codes Reference
+
+| Error Code | Description | Action Required |
+|------------|-------------|-----------------|
+| `NETWORK_ERROR` | Network connectivity issue | Check internet connection |
+| `TIMEOUT` | Request timeout | Retry payment |
+| `SERVER_ERROR` | Server-side error | Contact support |
+| `INVALID_TOKEN` | Authentication failed | Refresh token |
+| `PAYMENT_DECLINED` | Card declined | Try different payment method |
+| `3DS_FAILED` | 3D Secure authentication failed | Retry payment |
+| `USER_CANCELLED` | User cancelled payment | No action required |
+
+## Internationalization
+
+### Supported Languages
+
+- **English** (Base) - Default
+- **Arabic** (`ar`) - RTL support
+
+### Language Configuration
+
+#### Automatic Language Detection
+By default, the SDK follows the host app's preferred language:
+
+```swift
+let paymentSDK = PaymentSDK() // Uses system language
+```
+
+#### Manual Language Override
+```swift
+let configuration = PaymentSDKConfiguration.builder()
+    .withPreferredLanguageCode("ar") // Force Arabic
+    .build()
+
+let paymentSDK = PaymentSDK(configuration: configuration)
+```
+
+### RTL Support
+
+The SDK fully supports right-to-left (RTL) languages:
+- Automatic layout direction detection
+- Proper text alignment
+- Icon and image mirroring
+- Form field positioning
+
+## Troubleshooting
+
+### Common Issues
+
+#### 1. "No such module 'MobilePaymentSDK'"
+
+**Causes:**
+- Framework not properly linked
+- Wrong import statement
+- Build configuration issue
+
+**Solutions:**
+- Ensure framework is added to "Frameworks, Libraries, and Embedded Content"
+- Check that you're importing `MobilePaymentSDK` (not `TelrSDK`)
+- Clean build folder and rebuild
+
+#### 2. "Image not found" at Runtime
+
+**Causes:**
+- Framework not embedded
+- Architecture mismatch
+
+**Solutions:**
+- Set framework to "Embed & Sign" in project settings
+- Ensure you're using the correct XCFramework for your target architecture
+
+#### 3. CocoaPods Build Errors
+
+**Causes:**
+- Script sandboxing enabled
+- Derived data corruption
+- Pod cache issues
+
+**Solutions:**
+```bash
+# Clean derived data
+rm -rf ~/Library/Developer/Xcode/DerivedData/*
+
+# Clean pod cache
+pod cache clean --all
+
+# Reinstall pods
+pod deintegrate
+pod install
+```
+
+#### 4. Carthage Framework Issues
+
+**Causes:**
+- Not using XCFrameworks
+- Framework not properly embedded
+
+**Solutions:**
+```bash
+# Ensure XCFrameworks are used
+carthage update --use-xcframeworks --platform iOS
+
+# Verify framework is embedded
+# Check project settings > Frameworks, Libraries, and Embedded Content
+```
+
+#### 5. Payment Not Processing
+
+**Causes:**
+- Invalid URLs
+- Network connectivity
+- Server configuration
+
+**Solutions:**
+- Verify token and order URLs are correct
+- Check network connectivity
+- Enable debug logging to see detailed error messages
+- Verify server endpoints are accessible
+
+### Debug Logging
+
+Enable debug logging for development:
+
+```swift
+let configuration = PaymentSDKConfiguration.builder()
+    .withDebugLoggingEnabled(true)
+    .build()
+
+let paymentSDK = PaymentSDK(configuration: configuration)
+```
+
+Debug logs will show:
+- Network requests and responses
+- Error details
+- SDK internal state
+- Validation results
+
+### Performance Optimization
+
+#### Memory Management
+- The SDK automatically manages memory for payment views
+- Views are released when payment completes or is cancelled
+- No manual cleanup required
+
+#### Network Optimization
+- Requests are automatically retried on failure
+- Timeout intervals are configurable
+- Connection pooling is handled internally
+
+## API Reference
+
+### PaymentSDK
+
+Main SDK class for payment processing.
+
+```swift
+public class PaymentSDK {
+    public init(configuration: PaymentSDKConfiguration = PaymentSDKConfiguration())
+    public func updateConfiguration(_ configuration: PaymentSDKConfiguration)
+    
+    @MainActor
+    public func paymentView(
+        tokenURL: String,
+        orderURL: String,
+        onFinish: @escaping (SDKPaymentResponse) -> Void
+    ) -> some View
+}
+```
+
+### PaymentSDKConfiguration
+
+Configuration class for SDK customization.
+
+```swift
+public struct PaymentSDKConfiguration {
+    public let maxRetries: Int
+    public let debugLoggingEnabled: Bool
+    public let preferredLanguageCode: String?
+    
+    public static func builder() -> Builder
+    public init(builder configure: (inout Builder) -> Void)
+}
+```
+
+### SDKPaymentResponse
+
+Response object for payment operations.
+
+```swift
+public struct SDKPaymentResponse {
+    public let success: Bool
+    public let message: String
+    public let errorCode: String?
+    
+    public static func success(message: String) -> SDKPaymentResponse
+    public static func failure(message: String, errorCode: String?) -> SDKPaymentResponse
+}
+```
+
+### Order Model
+
+Order information structure.
+
+```swift
+public struct Order {
+    public let ref: String
+    public let amount: Amount
+    public let status: OrderStatus
+    public let allowedPaymentMethods: [PaymentMethod]?
+    public let _links: OrderLinks?
+    public let payments: [PaymentResponse]?
+}
+```
+
+### Amount Model
+
+Payment amount structure.
+
+```swift
+public struct Amount {
+    public let value: String
+    public let currency: String?
+}
+```
+
+### PaymentMethod
+
+Supported payment method entry returned with an order.
+
+```swift
+public struct PaymentMethod {
+    public let schemes: [String]          // e.g. ["VISA", "MASTERCARD"]
+    public let type: PaymentMethodType    // .card, .applePay
+}
+```
+
+### PaymentMethodType
+
+Type of payment method available for the order.
+
+```swift
+public enum PaymentMethodType: String {
+    case card = "CARD"
+    case applePay = "APPLE_PAY"
+}
+```
+
+### OrderStatus
+
+High-level status of the order.
+
+```swift
+public enum OrderStatus: String {
+    case pending = "PENDING"
+    case authorised = "AUTHORISED"
+    case paid = "PAID"
+    case cancelled = "CANCELLED"
+    case declined = "DECLINED"
+}
+```
+
+### OrderLinks (SDK-internal)
+
+Links to operations/endpoints associated with the order (card, Apple Pay, 3DS, etc.). These are used internally by the SDK; merchants typically don't need to use them directly.
 
 ## Support
 
-If you have questions or need help, please contact support@telr.com.
+### Documentation
+- [Telr Developer Portal](https://docs.telr.com)
 
-## License
+### Contact Information
+- **Email**: support@telr.com
 
-This repository is available under the [MIT license](LICENSE).
+### Community
+- [GitHub Repository](https://github.com/Telr-PG/telr-sdk-ios)
+- [Issue Tracker](https://github.com/Telr-PG/telr-sdk-ios/issues)
+
+### Version Information
+- **Current Version**: 0.0.20
+- **Minimum iOS Version**: 15.1
+- **Swift Version**: 6.0
+- **Last Updated**: January 2025
+
+---
+
+<div align="center">
+  <p><strong>Telr Mobile Payment SDK - iOS</strong></p>
+  <p>Secure • Reliable • Easy to Integrate</p>
+  <p>© 2025 Telr. All rights reserved.</p>
+</div>
