@@ -1,8 +1,13 @@
-# Telr Mobile Payment SDK - iOS Merchant Documentation
+# Telr iOS Payments SDK
 
 <div align="center">
-  <img src="docs/assets/images/telr-header.svg" alt="Telr Mobile Payment SDK" width="100%">
+  <img src="docs/assets/images/telr-header.svg" alt="Telr Mobile Payment SDK" width="100%" height="200px">
 </div>
+
+<br />
+<br />
+
+Bring Telr’s trusted payment experience into your iOS app with minimal effort. The SDK handles payment screens, security, and transaction flow while you stay focused on your customer journey. Your users enjoy a smooth, native in-app checkout.
 
 ## Table of Contents
 
@@ -521,7 +526,6 @@ Debug logs will show:
 #### Network Optimization
 - Requests are automatically retried on failure
 - Timeout intervals are configurable
-- Connection pooling is handled internally
 
 ## API Reference
 
@@ -554,7 +558,7 @@ public struct PaymentSDKConfiguration {
     public let preferredLanguageCode: String?
     
     public static func builder() -> Builder
-    public init(builder configure: (inout Builder) -> Void)
+    public init(builder configure: (input Builder) -> Void)
 }
 ```
 
@@ -637,7 +641,7 @@ public enum OrderStatus: String {
 
 ### OrderLinks (SDK-internal)
 
-Links to operations/endpoints associated with the order (card, Apple Pay, 3DS, etc.). These are used internally by the SDK; merchants typically don't need to use them directly.
+Links to operations/endpoints associated with the order (card, Apple Pay, 3DS, etc.). These are used internally by the SDK.
 
 ## Support
 
