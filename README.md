@@ -45,7 +45,7 @@ The Telr Mobile Payment SDK for iOS is a comprehensive payment solution that ena
 
 ## Installation
 
-### CocoaPods (Recommended)
+### CocoaPods
 
 1. **Install CocoaPods** (if not already installed):
    ```bash
@@ -60,7 +60,7 @@ The Telr Mobile Payment SDK for iOS is a comprehensive payment solution that ena
    inhibit_all_warnings!
    
    target 'YourAppTarget' do
-     pod 'TelrSDK', '~> 0.0.20'
+     pod 'TelrSDK', '~> 3.0.0'
    end
    ```
 
@@ -100,13 +100,13 @@ post_install do |installer|
 end
 ```
 
-### Swift Package Manager
+### Swift Package Manager (Recommended)
 
 #### Via Xcode (Recommended)
 
 1. In Xcode, go to **File > Add Package Dependencies**
 2. Enter the repository URL: `https://github.com/Telr-PG/telr-sdk-ios`
-3. Select version rule (e.g., "Up to Next Major") and pick release (e.g., 0.0.20)
+3. Select version rule (e.g., "Up to Next Major") and pick release (e.g., 3.0.0)
 4. Add the product `MobilePaymentSDK` to your target
 
 #### Via Package.swift
@@ -121,7 +121,7 @@ let package = Package(
         .iOS(.v15)
     ],
     dependencies: [
-        .package(url: "https://github.com/Telr-PG/telr-sdk-ios.git", .upToNextMajor(from: "0.0.20"))
+        .package(url: "https://github.com/Telr-PG/telr-sdk-ios.git", .upToNextMajor(from: "3.0.0"))
     ],
     targets: [
         .target(
@@ -138,7 +138,7 @@ let package = Package(
 
 1. **Add to Cartfile**:
    ```ogdl
-   binary "https://raw.githubusercontent.com/Telr-PG/telr-sdk-ios/main/MobilePaymentSDK.json" ~> 0.0.20
+   binary "https://raw.githubusercontent.com/Telr-PG/telr-sdk-ios/main/MobilePaymentSDK.json" ~> 3.0.0
    ```
 
 2. **Update dependencies**:
@@ -239,7 +239,6 @@ class PaymentViewController: UIViewController {
 
 ```swift
 let configuration = PaymentSDKConfiguration(
-    maxRetries: 1,
     debugLoggingEnabled: false,
     preferredLanguageCode: "en"
 )
@@ -251,7 +250,6 @@ let paymentSDK = PaymentSDK(configuration: configuration)
 
 ```swift
 let configuration = PaymentSDKConfiguration.builder()
-    .withMaxRetries(1)
     .withDebugLoggingEnabled(true) // Enable for development
     .withPreferredLanguageCode("ar") // Arabic support
     .build()
@@ -263,7 +261,6 @@ let paymentSDK = PaymentSDK(configuration: configuration)
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `maxRetries` | Int | `1` | Maximum retry attempts for failed requests |
 | `debugLoggingEnabled` | Bool | `false` | Enable debug logging (development only) |
 | `preferredLanguageCode` | String? | `nil` | Override language ("en", "ar") |
 
@@ -525,7 +522,7 @@ Debug logs will show:
 
 #### Network Optimization
 - Requests are automatically retried on failure
-- Timeout intervals are configurable
+- Timeout intervals are managed internally by the SDK
 
 ## API Reference
 
@@ -553,7 +550,6 @@ Configuration class for SDK customization.
 
 ```swift
 public struct PaymentSDKConfiguration {
-    public let maxRetries: Int
     public let debugLoggingEnabled: Bool
     public let preferredLanguageCode: String?
     
