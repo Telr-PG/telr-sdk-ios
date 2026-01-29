@@ -15,59 +15,6 @@ import _Concurrency
 import _PassKit_SwiftUI
 import _StringProcessing
 import _SwiftConcurrencyShims
-@_Concurrency.MainActor @preconcurrency public struct ErrorView : SwiftUICore.View {
-  @_Concurrency.MainActor @preconcurrency public var body: some SwiftUICore.View {
-    get
-  }
-  public typealias Body = @_opaqueReturnTypeOf("$s16MobilePaymentSDK9ErrorViewV4bodyQrvp", 0) __
-}
-@_Concurrency.MainActor public class NewCardPaymentViewModel : Foundation.ObservableObject {
-  @_Concurrency.MainActor public init(order: MobilePaymentSDK.Order, cardPaymentService: any MobilePaymentSDK.CardPaymentServiceProtocol, completion: @escaping (MobilePaymentSDK.SDKPaymentResponse) -> Swift.Void)
-  @_Concurrency.MainActor public func processPayment(cardNumber: Swift.String, expiryDate: Swift.String, cvv: Swift.String, saveCard: Swift.Bool)
-  @_Concurrency.MainActor public func clearError()
-  public typealias ObjectWillChangePublisher = Combine.ObservableObjectPublisher
-  @objc deinit
-}
-public struct SDKPaymentResponse : Swift.Codable, Swift.Equatable {
-  public let success: Swift.Bool
-  public let message: Swift.String
-  public let errorCode: Swift.String?
-  public init(success: Swift.Bool, message: Swift.String, errorCode: Swift.String? = nil)
-  public static func success(message: Swift.String = "Payment processed successfully") -> MobilePaymentSDK.SDKPaymentResponse
-  public static func failure(message: Swift.String, errorCode: Swift.String? = nil) -> MobilePaymentSDK.SDKPaymentResponse
-  public static func == (a: MobilePaymentSDK.SDKPaymentResponse, b: MobilePaymentSDK.SDKPaymentResponse) -> Swift.Bool
-  public func encode(to encoder: any Swift.Encoder) throws
-  public init(from decoder: any Swift.Decoder) throws
-}
-extension Foundation.Bundle {
-  public static let myFramework: Foundation.Bundle
-}
-public enum ThreeDSStatus : Swift.Int, Swift.CaseIterable, Swift.Codable, Swift.Equatable {
-  case success
-  case failure
-  case cancelled
-  public var status: Swift.String {
-    get
-  }
-  public init?(rawValue: Swift.Int)
-  public typealias AllCases = [MobilePaymentSDK.ThreeDSStatus]
-  public typealias RawValue = Swift.Int
-  nonisolated public static var allCases: [MobilePaymentSDK.ThreeDSStatus] {
-    get
-  }
-  public var rawValue: Swift.Int {
-    get
-  }
-}
-@_Concurrency.MainActor public class SavedCardsViewModel : Foundation.ObservableObject {
-  @_Concurrency.MainActor public init(order: MobilePaymentSDK.Order, savedCards: MobilePaymentSDK.SavedCardsResponse, cardPaymentService: any MobilePaymentSDK.CardPaymentServiceProtocol, completion: @escaping (MobilePaymentSDK.SDKPaymentResponse) -> Swift.Void)
-  @_Concurrency.MainActor public func processSavedCardPayment(for cardIndex: Swift.Int)
-  @_Concurrency.MainActor public func clearError()
-  @_Concurrency.MainActor public func updateSavedCards(_ newValue: MobilePaymentSDK.SavedCardsResponse)
-  @_Concurrency.MainActor public func deleteSavedCard(at index: Swift.Int, onCompletion: @escaping (Swift.Bool) -> Swift.Void)
-  public typealias ObjectWillChangePublisher = Combine.ObservableObjectPublisher
-  @objc deinit
-}
 @_Concurrency.MainActor @preconcurrency public struct RootView : SwiftUICore.View {
   @_Concurrency.MainActor @preconcurrency public var body: some SwiftUICore.View {
     get
@@ -80,20 +27,15 @@ public protocol PaymentServiceProtocol {
   func fetchSavedCards(from url: Swift.String, token: Swift.String) async throws -> MobilePaymentSDK.SavedCardsResponse
   func postApplePayCryptogram(to url: Swift.String, token: PassKit.PKPaymentToken, billingContact: PassKit.PKContact?, shippingContact: PassKit.PKContact?, authToken: Swift.String) async throws -> MobilePaymentSDK.Order
 }
-public protocol CardPaymentServiceProtocol {
-  func processPayment(request: MobilePaymentSDK.PaymentRequest, paymentURL: Swift.String) async throws -> MobilePaymentSDK.Order
-  func processSavedCardPayment(request: MobilePaymentSDK.SavedCardPaymentRequest, paymentURL: Swift.String) async throws -> MobilePaymentSDK.Order
-  func deleteSavedCard(link: MobilePaymentSDK.Link) async throws
+public enum L10n {
+  public static var currentLocaleOverride: Foundation.Locale?
+  public static func setLanguageOverride(_ languageCode: Swift.String?)
+  public static func localized(_ key: Swift.String, _ args: any Swift.CVarArg...) -> Swift.String
 }
 public protocol TokenStorageProtocol {
   func storeToken(_ token: Swift.String)
   func getToken() -> Swift.String?
   func clearToken()
-}
-public enum L10n {
-  public static var currentLocaleOverride: Foundation.Locale?
-  public static func setLanguageOverride(_ languageCode: Swift.String?)
-  public static func localized(_ key: Swift.String, _ args: any Swift.CVarArg...) -> Swift.String
 }
 public struct PaymentSDKConfiguration {
   public let debugLoggingEnabled: Swift.Bool
@@ -175,6 +117,25 @@ public struct ErrorMessages {
     get
   }
 }
+public enum CardPaymentError : Foundation.LocalizedError {
+  case invalidToken
+  case invalidURL
+  case invalidExpiryDate
+  case networkError(any Swift.Error)
+  case serverError(Swift.Int)
+  case invalidResponse
+  case paymentFailed(Swift.String)
+  public var errorDescription: Swift.String? {
+    get
+  }
+}
+public class CardPaymentService : MobilePaymentSDK.CardPaymentServiceProtocol {
+  public init(tokenStorage: any MobilePaymentSDK.TokenStorageProtocol, session: Foundation.URLSession = .shared)
+  public func processPayment(request: MobilePaymentSDK.PaymentRequest, paymentURL: Swift.String) async throws -> MobilePaymentSDK.Order
+  public func processSavedCardPayment(request: MobilePaymentSDK.SavedCardPaymentRequest, paymentURL: Swift.String) async throws -> MobilePaymentSDK.Order
+  public func deleteSavedCard(link: MobilePaymentSDK.Link) async throws
+  @objc deinit
+}
 public class PaymentSDK {
   public init(configuration: MobilePaymentSDK.PaymentSDKConfiguration = PaymentSDKConfiguration())
   public static var sdkVersion: Swift.String {
@@ -202,25 +163,6 @@ public class PaymentService : MobilePaymentSDK.PaymentServiceProtocol {
   public func fetchOrder(from url: Swift.String, token: Swift.String) async throws -> MobilePaymentSDK.Order
   public func fetchSavedCards(from url: Swift.String, token: Swift.String) async throws -> MobilePaymentSDK.SavedCardsResponse
   public func postApplePayCryptogram(to url: Swift.String, token: PassKit.PKPaymentToken, billingContact: PassKit.PKContact?, shippingContact: PassKit.PKContact?, authToken: Swift.String) async throws -> MobilePaymentSDK.Order
-  @objc deinit
-}
-public enum CardPaymentError : Foundation.LocalizedError {
-  case invalidToken
-  case invalidURL
-  case invalidExpiryDate
-  case networkError(any Swift.Error)
-  case serverError(Swift.Int)
-  case invalidResponse
-  case paymentFailed(Swift.String)
-  public var errorDescription: Swift.String? {
-    get
-  }
-}
-public class CardPaymentService : MobilePaymentSDK.CardPaymentServiceProtocol {
-  public init(tokenStorage: any MobilePaymentSDK.TokenStorageProtocol, session: Foundation.URLSession = .shared)
-  public func processPayment(request: MobilePaymentSDK.PaymentRequest, paymentURL: Swift.String) async throws -> MobilePaymentSDK.Order
-  public func processSavedCardPayment(request: MobilePaymentSDK.SavedCardPaymentRequest, paymentURL: Swift.String) async throws -> MobilePaymentSDK.Order
-  public func deleteSavedCard(link: MobilePaymentSDK.Link) async throws
   @objc deinit
 }
 @_Concurrency.MainActor public class RootPaymentCoordinator : Combine.ObservableObject {
@@ -478,14 +420,12 @@ public struct Order : Swift.Codable, Swift.Equatable, Swift.Hashable {
   }
   public init(from decoder: any Swift.Decoder) throws
 }
-public struct PaymentResponse : Swift.Codable, Swift.Equatable, Swift.Hashable {
-  public static func == (a: MobilePaymentSDK.PaymentResponse, b: MobilePaymentSDK.PaymentResponse) -> Swift.Bool
-  public func encode(to encoder: any Swift.Encoder) throws
-  public func hash(into hasher: inout Swift.Hasher)
-  public var hashValue: Swift.Int {
-    get
-  }
-  public init(from decoder: any Swift.Decoder) throws
+@_Concurrency.MainActor public class NewCardPaymentViewModel : Foundation.ObservableObject {
+  @_Concurrency.MainActor public init(order: MobilePaymentSDK.Order, cardPaymentService: any MobilePaymentSDK.CardPaymentServiceProtocol, completion: @escaping (MobilePaymentSDK.SDKPaymentResponse) -> Swift.Void)
+  @_Concurrency.MainActor public func processPayment(cardNumber: Swift.String, expiryDate: Swift.String, cvv: Swift.String, saveCard: Swift.Bool)
+  @_Concurrency.MainActor public func clearError()
+  public typealias ObjectWillChangePublisher = Combine.ObservableObjectPublisher
+  @objc deinit
 }
 public struct RequestCustomerName : Swift.Codable {
   public let title: Swift.String?
@@ -528,6 +468,24 @@ public struct PaymentRequest : Swift.Codable {
   public func encode(to encoder: any Swift.Encoder) throws
   public init(from decoder: any Swift.Decoder) throws
 }
+public struct PaymentResponse : Swift.Codable, Swift.Equatable, Swift.Hashable {
+  public static func == (a: MobilePaymentSDK.PaymentResponse, b: MobilePaymentSDK.PaymentResponse) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+@_Concurrency.MainActor public class SavedCardsViewModel : Foundation.ObservableObject {
+  @_Concurrency.MainActor public init(order: MobilePaymentSDK.Order, savedCards: MobilePaymentSDK.SavedCardsResponse, cardPaymentService: any MobilePaymentSDK.CardPaymentServiceProtocol, completion: @escaping (MobilePaymentSDK.SDKPaymentResponse) -> Swift.Void)
+  @_Concurrency.MainActor public func processSavedCardPayment(for cardIndex: Swift.Int)
+  @_Concurrency.MainActor public func clearError()
+  @_Concurrency.MainActor public func updateSavedCards(_ newValue: MobilePaymentSDK.SavedCardsResponse)
+  @_Concurrency.MainActor public func deleteSavedCard(at index: Swift.Int, onCompletion: @escaping (Swift.Bool) -> Swift.Void)
+  public typealias ObjectWillChangePublisher = Combine.ObservableObjectPublisher
+  @objc deinit
+}
 public struct SavedCardsResponse : Swift.Codable, Swift.Equatable, Swift.Hashable {
   public let cards: [MobilePaymentSDK.SavedCard]
   public let cvvRequired: Swift.Bool?
@@ -569,12 +527,54 @@ public struct SavedCard : Swift.Codable, Swift.Identifiable, Swift.Equatable, Sw
   }
   public init(from decoder: any Swift.Decoder) throws
 }
-extension MobilePaymentSDK.ErrorView : Swift.Sendable {}
-extension MobilePaymentSDK.NewCardPaymentViewModel : Swift.Sendable {}
-extension MobilePaymentSDK.ThreeDSStatus : Swift.Hashable {}
-extension MobilePaymentSDK.ThreeDSStatus : Swift.RawRepresentable {}
-extension MobilePaymentSDK.SavedCardsViewModel : Swift.Sendable {}
+extension Foundation.Bundle {
+  public static let myFramework: Foundation.Bundle
+}
+public enum ThreeDSStatus : Swift.Int, Swift.CaseIterable, Swift.Codable, Swift.Equatable {
+  case success
+  case failure
+  case cancelled
+  public var status: Swift.String {
+    get
+  }
+  public init?(rawValue: Swift.Int)
+  public typealias AllCases = [MobilePaymentSDK.ThreeDSStatus]
+  public typealias RawValue = Swift.Int
+  nonisolated public static var allCases: [MobilePaymentSDK.ThreeDSStatus] {
+    get
+  }
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@_Concurrency.MainActor @preconcurrency public struct ErrorView : SwiftUICore.View {
+  @_Concurrency.MainActor @preconcurrency public var body: some SwiftUICore.View {
+    get
+  }
+  public typealias Body = @_opaqueReturnTypeOf("$s16MobilePaymentSDK9ErrorViewV4bodyQrvp", 0) __
+}
+public struct SDKPaymentResponse : Swift.Codable, Swift.Equatable {
+  public let success: Swift.Bool
+  public let message: Swift.String
+  public let errorCode: Swift.String?
+  public init(success: Swift.Bool, message: Swift.String, errorCode: Swift.String? = nil)
+  public static func success(message: Swift.String = "Payment processed successfully") -> MobilePaymentSDK.SDKPaymentResponse
+  public static func failure(message: Swift.String, errorCode: Swift.String? = nil) -> MobilePaymentSDK.SDKPaymentResponse
+  public static func == (a: MobilePaymentSDK.SDKPaymentResponse, b: MobilePaymentSDK.SDKPaymentResponse) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public protocol CardPaymentServiceProtocol {
+  func processPayment(request: MobilePaymentSDK.PaymentRequest, paymentURL: Swift.String) async throws -> MobilePaymentSDK.Order
+  func processSavedCardPayment(request: MobilePaymentSDK.SavedCardPaymentRequest, paymentURL: Swift.String) async throws -> MobilePaymentSDK.Order
+  func deleteSavedCard(link: MobilePaymentSDK.Link) async throws
+}
 extension MobilePaymentSDK.RootView : Swift.Sendable {}
 extension MobilePaymentSDK.RootPaymentCoordinator : Swift.Sendable {}
 extension MobilePaymentSDK.PaymentMethodType : Swift.RawRepresentable {}
 extension MobilePaymentSDK.OrderStatus : Swift.RawRepresentable {}
+extension MobilePaymentSDK.NewCardPaymentViewModel : Swift.Sendable {}
+extension MobilePaymentSDK.SavedCardsViewModel : Swift.Sendable {}
+extension MobilePaymentSDK.ThreeDSStatus : Swift.Hashable {}
+extension MobilePaymentSDK.ThreeDSStatus : Swift.RawRepresentable {}
+extension MobilePaymentSDK.ErrorView : Swift.Sendable {}
