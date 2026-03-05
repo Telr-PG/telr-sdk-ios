@@ -28,7 +28,7 @@ The Telr Mobile Payment SDK for iOS is a comprehensive payment solution that ena
 
 ### Key Features
 
-- **Multiple Payment Methods**: Credit/Debit Cards, Apple Pay
+- **Multiple Payment Methods**: Credit/Debit Cards, Apple Pay, Tabby, STC Bank
 - **3D Secure Support**: Built-in 3DS authentication flow
 - **Saved Cards**: Tokenization and card management
 - **Modern UI**: SwiftUI-based interface with iOS design guidelines
@@ -292,6 +292,14 @@ The SDK supports the following payment methods:
    - Native Apple Pay integration
    - Touch ID/Face ID authentication
    - Secure element processing
+
+3. **Tabby (Pay Later)**
+   - Displayed when enabled in the order (`allowedPaymentMethods` / relevant order links)
+   - SDK-managed redirect/return flow
+
+4. **STC Bank**
+   - Displayed when enabled in the order (`allowedPaymentMethods` / relevant order links)
+   - SDK-managed data capture and submission flow
 
 ### Card Payment Features
 
@@ -606,7 +614,7 @@ Supported payment method entry returned with an order.
 ```swift
 public struct PaymentMethod {
     public let schemes: [String]          // e.g. ["VISA", "MASTERCARD"]
-    public let type: PaymentMethodType    // .card, .applePay
+    public let type: PaymentMethodType    // .card, .applePay, .tabby, .stcBank
 }
 ```
 
@@ -618,6 +626,8 @@ Type of payment method available for the order.
 public enum PaymentMethodType: String {
     case card = "CARD"
     case applePay = "APPLE_PAY"
+    case tabby = "TABBY"
+    case stcBank = "STC_BANK"
 }
 ```
 
