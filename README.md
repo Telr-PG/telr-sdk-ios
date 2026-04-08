@@ -16,11 +16,14 @@ Bring Telr’s trusted payment experience into your iOS app with minimal effort.
 3. [Quick Start](#quick-start)
 4. [Configuration](#configuration)
 5. [Payment Methods](#payment-methods)
-6. [Error Handling](#error-handling)
-7. [Internationalization](#internationalization)
-8. [Troubleshooting](#troubleshooting)
-9. [API Reference](#api-reference)
-10. [Support](#support)
+6. [Add Card Flow](#add-card-flow)
+7. [Pay with Saved Card Flow](#pay-with-saved-card-flow)
+8. [Pay with Card Flow](#pay-with-card-flow)
+9. [Error Handling](#error-handling)
+9. [Internationalization](#internationalization)
+10. [Troubleshooting](#troubleshooting)
+11. [API Reference](#api-reference)
+12. [Support](#support)
 
 ## Overview
 
@@ -28,7 +31,7 @@ The Telr Mobile Payment SDK for iOS is a comprehensive payment solution that ena
 
 ### Key Features
 
-- **Multiple Payment Methods**: Credit/Debit Cards, Apple Pay, Tabby, STC Bank
+- **Multiple Payment Methods**: Credit/Debit Cards, Apple Pay, Tabby, Tamara, STC Bank
 - **3D Secure Support**: Built-in 3DS authentication flow
 - **Saved Cards**: Tokenization and card management
 - **Modern UI**: SwiftUI-based interface with iOS design guidelines
@@ -60,7 +63,7 @@ The Telr Mobile Payment SDK for iOS is a comprehensive payment solution that ena
    inhibit_all_warnings!
    
    target 'YourAppTarget' do
-     pod 'TelrSDK', '~> 3.0.0'
+     pod 'TelrSDK', '~> 4.1.0'
    end
    ```
 
@@ -106,7 +109,7 @@ end
 
 1. In Xcode, go to **File > Add Package Dependencies**
 2. Enter the repository URL: `https://github.com/Telr-PG/telr-sdk-ios`
-3. Select version rule (e.g., "Up to Next Major") and pick release (e.g., 3.0.0)
+3. Select version rule (e.g., "Up to Next Major") and pick release (e.g., 4.0.1)
 4. Add the product `MobilePaymentSDK` to your target
 
 #### Via Package.swift
@@ -121,7 +124,7 @@ let package = Package(
         .iOS(.v15)
     ],
     dependencies: [
-        .package(url: "https://github.com/Telr-PG/telr-sdk-ios.git", .upToNextMajor(from: "3.0.0"))
+        .package(url: "https://github.com/Telr-PG/telr-sdk-ios.git", .upToNextMajor(from: "4.1.0"))
     ],
     targets: [
         .target(
@@ -138,7 +141,7 @@ let package = Package(
 
 1. **Add to Cartfile**:
    ```ogdl
-   binary "https://raw.githubusercontent.com/Telr-PG/telr-sdk-ios/main/MobilePaymentSDK.json" ~> 3.0.0
+   binary "https://raw.githubusercontent.com/Telr-PG/telr-sdk-ios/main/MobilePaymentSDK.json" ~> 4.1.0
    ```
 
 2. **Update dependencies**:
@@ -293,11 +296,15 @@ The SDK supports the following payment methods:
    - Touch ID/Face ID authentication
    - Secure element processing
 
-3. **Tabby (Pay Later)**
+3. **Tabby (Buy Now Pay Later)**
    - Displayed when enabled in the order (`allowedPaymentMethods` / relevant order links)
    - SDK-managed redirect/return flow
 
-4. **STC Bank**
+4. **Tamara (Buy Now Pay Later)**
+   - Displayed when enabled in the order (`allowedPaymentMethods` / relevant order links)
+   - SDK-managed redirect/return flow
+
+5. **STC Bank**
    - Displayed when enabled in the order (`allowedPaymentMethods` / relevant order links)
    - SDK-managed data capture and submission flow
 
@@ -328,11 +335,105 @@ Apple Pay is automatically available when:
 
 The SDK handles Apple Pay availability detection and presents the option when appropriate.
 
+## Add Card Flow
+
+Use `addCardView` when you want to verify and save a new card (without immediate checkout capture).
+
+### Merchant-side flow
+
+1. Merchant backend creates a VERIFY order.
+2. Merchant backend returns `tokenUrl` + `orderUrl` to the app.
+3. App opens SDK add-card sheet with those URLs.
+4. SDK handles card entry, 3DS, and completion callback.
+5. On success callback, app calls merchant backend completion endpoint to sync saved cards (for example, `/add-card/complete`).
+
+### SwiftUI Example
+
+```swift
+paymentSDK.addCardView(
+    tokenURL: addCardTokenURL,
+    orderURL: addCardOrderURL
+) { response in
+    if response.success {
+        // response.ref — payment reference from the VERIFY transaction (store for saved-card payments)
+        // response.maskedName — masked cardholder name (store for SDKSavedCardInput)
+        // response.savedCards — refreshed saved cards list
+    } else {
+        // show response.message
+    }
+}
+```
+
+## Pay with Saved Card Flow
+
+Use `payWithSavedCardView` when a customer selects a saved card and CVV re-entry and/or 3DS is required (typically for higher-value transactions per your risk policy).
+
+> **Note**: For low-value transactions your backend can process the saved card silently using `class: CONT` without opening the SDK — no CVV or user interaction needed. Use `payWithSavedCardView` (ECOM) when your risk policy requires CVV re-entry or 3DS authentication.
+
+### Merchant-side flow
+
+1. Merchant backend creates a SALE order.
+2. Merchant backend returns `tokenUrl` + `orderUrl` to the app.
+3. App opens the SDK saved-card sheet with those URLs and the saved card details.
+4. SDK displays the masked card (read-only) and prompts for CVV only.
+5. SDK handles payment, 3DS, and calls the completion callback.
+
+### SwiftUI Example
+
+```swift
+let savedCard = SDKSavedCardInput(
+    token: "card_token_here",
+    maskedCard: "**** 1111",   // masked card from add-card flow (e.g. SavedCard.maskedCard)
+    expiry: "12/30",
+    scheme: "VISA",
+    maskedName: "J*** D**"    // optional, shown on the sheet
+)
+
+paymentSDK.payWithSavedCardView(
+    tokenURL: checkoutTokenURL,
+    orderURL: checkoutOrderURL,
+    savedCard: savedCard
+) { response in
+    if response.success {
+        // payment complete
+    } else {
+        // show response.message
+    }
+}
+```
+
+## Pay with Card Flow
+
+Use `payWithCardView` when you want to collect card details and process an immediate payment (e.g., gift card purchases) without saving the card.
+
+### Merchant-side flow
+
+1. Merchant backend creates a SALE order.
+2. Merchant backend returns `tokenUrl` + `orderUrl` to the app.
+3. App opens SDK pay-with-card sheet with those URLs.
+4. SDK handles card entry, BIN lookup (including international card blocking), 3DS, and completion callback.
+5. On success callback, the payment is complete.
+
+### SwiftUI Example
+
+```swift
+paymentSDK.payWithCardView(
+    tokenURL: checkoutTokenURL,
+    orderURL: checkoutOrderURL
+) { response in
+    if response.success {
+        // payment complete
+    } else {
+        // show response.message
+    }
+}
+```
+
 ## Error Handling
 
 ### SDK Response Format
 
-All payment operations return a standardized response:
+Checkout operations return:
 
 ```swift
 public struct SDKPaymentResponse {
@@ -342,24 +443,37 @@ public struct SDKPaymentResponse {
 }
 ```
 
+Add-card operations return:
+
+```swift
+public struct SDKAddCardResponse {
+    public let success: Bool
+    public let message: String
+    public let errorCode: String?
+    public let ref: String?              // payment reference from the VERIFY transaction
+    public let savedCards: [SavedCard]?
+    public let maskedName: String?       // e.g. "J*** D**"
+}
+```
+
 ### Common Error Scenarios
 
-#### Network Errors
+#### Network and Server Errors
 ```swift
 .onFinish { response in
     if !response.success {
         switch response.errorCode {
-        case "NETWORK_ERROR":
-            // Handle network connectivity issues
+        case "timeout":
+            // Handle session timeout
             break
-        case "TIMEOUT":
-            // Handle request timeout
-            break
-        case "SERVER_ERROR":
-            // Handle server-side errors
+        case let code?:
+            // Handle gateway/backend specific codes
+            print("Payment failed with code: \(code)")
             break
         default:
-            // Handle other errors
+            // Network/server failures may be provided as message text
+            print("Payment failed: \(response.message)")
+            print("Error code: \(response.errorCode ?? "Unknown")")
             break
         }
     }
@@ -388,13 +502,8 @@ public struct SDKPaymentResponse {
 
 | Error Code | Description | Action Required |
 |------------|-------------|-----------------|
-| `NETWORK_ERROR` | Network connectivity issue | Check internet connection |
-| `TIMEOUT` | Request timeout | Retry payment |
-| `SERVER_ERROR` | Server-side error | Contact support |
-| `INVALID_TOKEN` | Authentication failed | Refresh token |
-| `PAYMENT_DECLINED` | Card declined | Try different payment method |
-| `3DS_FAILED` | 3D Secure authentication failed | Retry payment |
-| `USER_CANCELLED` | User cancelled payment | No action required |
+| `timeout` | SDK session timed out | Retry checkout |
+| `<gateway_code>` | Code returned by payment backend/order response | Log and map to merchant-friendly message |
 
 ## Internationalization
 
@@ -549,6 +658,28 @@ public class PaymentSDK {
         orderURL: String,
         onFinish: @escaping (SDKPaymentResponse) -> Void
     ) -> some View
+
+    @MainActor
+    public func addCardView(
+        tokenURL: String,
+        orderURL: String,
+        onFinish: @escaping (SDKAddCardResponse) -> Void
+    ) -> some View
+
+    @MainActor
+    public func payWithCardView(
+        tokenURL: String,
+        orderURL: String,
+        onFinish: @escaping (SDKPaymentResponse) -> Void
+    ) -> some View
+
+    @MainActor
+    public func payWithSavedCardView(
+        tokenURL: String,
+        orderURL: String,
+        savedCard: SDKSavedCardInput,
+        onFinish: @escaping (SDKPaymentResponse) -> Void
+    ) -> some View
 }
 ```
 
@@ -562,7 +693,7 @@ public struct PaymentSDKConfiguration {
     public let preferredLanguageCode: String?
     
     public static func builder() -> Builder
-    public init(builder configure: (input Builder) -> Void)
+    public init(builder configure: (inout Builder) -> Void)
 }
 ```
 
@@ -578,6 +709,35 @@ public struct SDKPaymentResponse {
     
     public static func success(message: String) -> SDKPaymentResponse
     public static func failure(message: String, errorCode: String?) -> SDKPaymentResponse
+}
+```
+
+### SDKSavedCardInput
+
+Input struct passed to `payWithSavedCardView`. Contains the saved card details to display on the payment sheet.
+
+```swift
+public struct SDKSavedCardInput {
+    public let token: String        // card token from add-card flow
+    public let maskedCard: String   // e.g. "**** 1111"
+    public let expiry: String       // e.g. "12/30"
+    public let scheme: String       // e.g. "VISA"
+    public let maskedName: String?  // optional, e.g. "J*** D**"
+}
+```
+
+### SDKAddCardResponse
+
+Response object for add-card operations.
+
+```swift
+public struct SDKAddCardResponse {
+    public let success: Bool
+    public let message: String
+    public let errorCode: String?
+    public let ref: String?           // payment reference from the VERIFY transaction
+    public let savedCards: [SavedCard]?
+    public let maskedName: String?    // e.g. "J*** D**", use for SDKSavedCardInput
 }
 ```
 
@@ -627,6 +787,7 @@ public enum PaymentMethodType: String {
     case card = "CARD"
     case applePay = "APPLE_PAY"
     case tabby = "TABBY"
+    case tamara = "TAMARA"
     case stcBank = "STC_BANK"
 }
 ```
@@ -662,10 +823,10 @@ Links to operations/endpoints associated with the order (card, Apple Pay, 3DS, 
 - [Issue Tracker](https://github.com/Telr-PG/telr-sdk-ios/issues)
 
 ### Version Information
-- **Current Version**: 0.0.20
+- **Current Version**: 4.1.0
 - **Minimum iOS Version**: 15.1
 - **Swift Version**: 6.0
-- **Last Updated**: January 2025
+- **Last Updated**: March 2026
 
 ---
 

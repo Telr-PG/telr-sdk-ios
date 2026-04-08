@@ -1,0 +1,800 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.1.2 effective-5.10 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)
+// swift-module-flags: -target arm64-apple-ios15.1 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name MobilePaymentSDK
+// swift-module-flags-ignorable:  -interface-compiler-version 6.1.2
+import Combine
+import Contacts
+import CoreGraphics
+import DeveloperToolsSupport
+import Foundation
+import PassKit
+import Swift
+import SwiftUI
+import UIKit
+import WebKit
+import _Concurrency
+import _PassKit_SwiftUI
+import _StringProcessing
+import _SwiftConcurrencyShims
+public enum TabbyStatus : Swift.Int, Swift.CaseIterable, Swift.Codable, Swift.Equatable {
+  case success
+  case failure
+  case cancelled
+  public var status: Swift.String {
+    get
+  }
+  public init?(rawValue: Swift.Int)
+  public typealias AllCases = [MobilePaymentSDK.TabbyStatus]
+  public typealias RawValue = Swift.Int
+  nonisolated public static var allCases: [MobilePaymentSDK.TabbyStatus] {
+    get
+  }
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public struct TabbyInitRequest : Swift.Codable {
+  public let customer: MobilePaymentSDK.RequestCustomer?
+  public init(customer: MobilePaymentSDK.RequestCustomer? = nil)
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct TabbyInitLinks : Swift.Codable {
+  public let redirect: MobilePaymentSDK.Link?
+  public let complete: MobilePaymentSDK.Link?
+  public init(redirect: MobilePaymentSDK.Link? = nil, complete: MobilePaymentSDK.Link? = nil)
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct TabbyInitResponse : Swift.Codable {
+  public let links: MobilePaymentSDK.TabbyInitLinks?
+  public init(links: MobilePaymentSDK.TabbyInitLinks? = nil)
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct TabbyErrorResponse : Swift.Codable {
+  public let code: Swift.Int?
+  public let status: Swift.String?
+  public let reason: Swift.String?
+  public let errors: [Swift.String]
+  public init(code: Swift.Int? = nil, status: Swift.String? = nil, reason: Swift.String? = nil, errors: [Swift.String] = [])
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct CardErrorResponse : Swift.Codable {
+  public let code: Swift.Int?
+  public let status: Swift.String?
+  public let reason: Swift.String?
+  public let errors: [Swift.String]?
+  public var isKnownValidationCode: Swift.Bool {
+    get
+  }
+  public init(code: Swift.Int? = nil, status: Swift.String? = nil, reason: Swift.String? = nil, errors: [Swift.String]? = nil)
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public enum CardPaymentError : Foundation.LocalizedError {
+  case invalidToken
+  case invalidURL
+  case invalidExpiryDate
+  case networkError(any Swift.Error)
+  case serverError(Swift.Int)
+  case invalidResponse
+  case paymentFailed(Swift.String)
+  case cardValidationError(MobilePaymentSDK.CardErrorResponse)
+  public var errorDescription: Swift.String? {
+    get
+  }
+}
+public class CardPaymentService : MobilePaymentSDK.CardPaymentServiceProtocol {
+  public init(tokenStorage: any MobilePaymentSDK.TokenStorageProtocol, session: Foundation.URLSession = .shared)
+  public func processPayment(request: MobilePaymentSDK.PaymentRequest, paymentURL: Swift.String) async throws -> MobilePaymentSDK.Order
+  public func processSavedCardPayment(request: MobilePaymentSDK.SavedCardPaymentRequest, paymentURL: Swift.String) async throws -> MobilePaymentSDK.Order
+  public func deleteSavedCard(link: MobilePaymentSDK.Link) async throws
+  @objc deinit
+}
+public struct StcBankInitRequest : Swift.Codable {
+  public let customer: MobilePaymentSDK.RequestCustomer?
+  public init(customer: MobilePaymentSDK.RequestCustomer? = nil)
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct StcBankCompleteRequest : Swift.Codable {
+  public let otp: Swift.String
+  public init(otp: Swift.String)
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct StcBankLinks : Swift.Codable {
+  public let complete: MobilePaymentSDK.Link?
+  public init(complete: MobilePaymentSDK.Link? = nil)
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct StcBankInitResponse : Swift.Codable {
+  public let appApproval: Swift.Bool?
+  public let links: MobilePaymentSDK.StcBankLinks?
+  public init(appApproval: Swift.Bool? = nil, links: MobilePaymentSDK.StcBankLinks? = nil)
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct StcBankErrorResponse : Swift.Codable {
+  public let code: Swift.Int?
+  public let status: Swift.String?
+  public let reason: Swift.String?
+  public let errors: [Swift.String]
+  public init(code: Swift.Int? = nil, status: Swift.String? = nil, reason: Swift.String? = nil, errors: [Swift.String] = [])
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+@_Concurrency.MainActor public class NewCardPaymentViewModel : Foundation.ObservableObject {
+  @_Concurrency.MainActor public init(order: MobilePaymentSDK.Order, cardPaymentService: any MobilePaymentSDK.CardPaymentServiceProtocol, completion: @escaping (MobilePaymentSDK.SDKPaymentResponse) -> Swift.Void)
+  @_Concurrency.MainActor public func processPayment(cardNumber: Swift.String, expiryDate: Swift.String, cvv: Swift.String, saveCard: Swift.Bool)
+  @_Concurrency.MainActor public func clearError()
+  public typealias ObjectWillChangePublisher = Combine.ObservableObjectPublisher
+  @objc deinit
+}
+public struct SDKAddCardResponse : Swift.Codable, Swift.Equatable {
+  public let success: Swift.Bool
+  public let message: Swift.String
+  public let errorCode: Swift.String?
+  public let ref: Swift.String?
+  public let savedCards: [MobilePaymentSDK.SavedCard]?
+  public let maskedName: Swift.String?
+  public init(success: Swift.Bool, message: Swift.String, errorCode: Swift.String? = nil, ref: Swift.String? = nil, savedCards: [MobilePaymentSDK.SavedCard]? = nil, maskedName: Swift.String? = nil)
+  public init(paymentResponse: MobilePaymentSDK.SDKPaymentResponse, ref: Swift.String?, savedCards: [MobilePaymentSDK.SavedCard]? = nil, maskedName: Swift.String? = nil)
+  public static func == (a: MobilePaymentSDK.SDKAddCardResponse, b: MobilePaymentSDK.SDKAddCardResponse) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public protocol TokenStorageProtocol {
+  func storeToken(_ token: Swift.String)
+  func getToken() -> Swift.String?
+  func clearToken()
+}
+@_Concurrency.MainActor @preconcurrency public struct RootView : SwiftUICore.View {
+  @_Concurrency.MainActor @preconcurrency public var body: some SwiftUICore.View {
+    get
+  }
+  public typealias Body = @_opaqueReturnTypeOf("$s16MobilePaymentSDK8RootViewV4bodyQrvp", 0) __
+}
+public struct SavedCardsResponse : Swift.Codable, Swift.Equatable, Swift.Hashable {
+  public let cards: [MobilePaymentSDK.SavedCard]
+  public let cvvRequired: Swift.Bool?
+  public init(cards: [MobilePaymentSDK.SavedCard], cvvRequired: Swift.Bool? = nil)
+  public static func == (a: MobilePaymentSDK.SavedCardsResponse, b: MobilePaymentSDK.SavedCardsResponse) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct SavedCardLinks : Swift.Codable, Swift.Equatable, Swift.Hashable {
+  public let delSavedCard: MobilePaymentSDK.Link?
+  public static func == (a: MobilePaymentSDK.SavedCardLinks, b: MobilePaymentSDK.SavedCardLinks) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct SavedCard : Swift.Codable, Swift.Identifiable, Swift.Equatable, Swift.Hashable {
+  public let token: Swift.String
+  public let maskedCard: Swift.String
+  public let expiry: Swift.String
+  public let scheme: Swift.String
+  public let _links: MobilePaymentSDK.SavedCardLinks?
+  public var id: Swift.String {
+    get
+  }
+  public init(token: Swift.String, maskedCard: Swift.String, expiry: Swift.String, scheme: Swift.String, _links: MobilePaymentSDK.SavedCardLinks? = nil)
+  public static func == (a: MobilePaymentSDK.SavedCard, b: MobilePaymentSDK.SavedCard) -> Swift.Bool
+  public typealias ID = Swift.String
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct RequestCustomerName : Swift.Codable {
+  public let title: Swift.String?
+  public let firstName: Swift.String?
+  public let lastName: Swift.String?
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct RequestCustomerAddress : Swift.Codable {
+  public let line1: Swift.String?
+  public let city: Swift.String?
+  public let country: Swift.String?
+  public let phone: Swift.String?
+  public init(line1: Swift.String? = nil, city: Swift.String? = nil, country: Swift.String? = nil, phone: Swift.String? = nil)
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct RequestCustomer : Swift.Codable {
+  public let name: MobilePaymentSDK.RequestCustomerName?
+  public let address: MobilePaymentSDK.RequestCustomerAddress?
+  public let email: Swift.String?
+  public let phone: Swift.String?
+  public init(name: MobilePaymentSDK.RequestCustomerName? = nil, address: MobilePaymentSDK.RequestCustomerAddress? = nil, email: Swift.String? = nil, phone: Swift.String? = nil)
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct CardPaymentRequest : Swift.Codable {
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct SavedCardPaymentRequest : Swift.Codable {
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct ExpiryDate : Swift.Codable {
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct PaymentRequest : Swift.Codable {
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public enum L10n {
+  public static var currentLocaleOverride: Foundation.Locale?
+  public static func setLanguageOverride(_ languageCode: Swift.String?)
+  public static func localized(_ key: Swift.String, _ args: any Swift.CVarArg...) -> Swift.String
+}
+public struct PaymentMethod : Swift.Codable, Swift.Identifiable, Swift.Equatable, Swift.Hashable {
+  public var id: MobilePaymentSDK.PaymentMethodType {
+    get
+  }
+  public let schemes: [Swift.String]
+  public let type: MobilePaymentSDK.PaymentMethodType
+  public init(schemes: [Swift.String] = [], type: MobilePaymentSDK.PaymentMethodType)
+  public init(from decoder: any Swift.Decoder) throws
+  public static func == (a: MobilePaymentSDK.PaymentMethod, b: MobilePaymentSDK.PaymentMethod) -> Swift.Bool
+  public typealias ID = MobilePaymentSDK.PaymentMethodType
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public enum PaymentMethodType : Swift.String, Swift.Codable, Swift.Equatable, Swift.Hashable, Swift.CaseIterable {
+  case card
+  case applePay
+  case tabby
+  case tamara
+  case stcBank
+  case unknown
+  public init(from decoder: any Swift.Decoder) throws
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init?(rawValue: Swift.String)
+  public typealias AllCases = [MobilePaymentSDK.PaymentMethodType]
+  public typealias RawValue = Swift.String
+  nonisolated public static var allCases: [MobilePaymentSDK.PaymentMethodType] {
+    get
+  }
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public struct Amount : Swift.Codable, Swift.Equatable, Swift.Hashable {
+  public let value: Swift.String
+  public let currency: Swift.String?
+  public init(value: Swift.String, currency: Swift.String = "AED")
+  public var formatted: Swift.String {
+    get
+  }
+  public static func == (a: MobilePaymentSDK.Amount, b: MobilePaymentSDK.Amount) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct Link : Swift.Codable, Swift.Equatable, Swift.Hashable {
+  public let method: Swift.String
+  public let href: Swift.String
+  public init(method: Swift.String, href: Swift.String)
+  public static func == (a: MobilePaymentSDK.Link, b: MobilePaymentSDK.Link) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct OrderLinks : Swift.Codable, Swift.Equatable, Swift.Hashable {
+  public let card: MobilePaymentSDK.Link?
+  public let selfLink: MobilePaymentSDK.Link?
+  public let auth: MobilePaymentSDK.Link?
+  public let savedCard: MobilePaymentSDK.Link?
+  public var savedCardPay: MobilePaymentSDK.Link?
+  public var delSavedCard: MobilePaymentSDK.Link?
+  public let binLookUp: MobilePaymentSDK.Link?
+  public let applePay: MobilePaymentSDK.Link?
+  public let threeDsUrl: MobilePaymentSDK.Link?
+  public let threeDsComplete: MobilePaymentSDK.Link?
+  public let tabby: MobilePaymentSDK.Link?
+  public let tamara: MobilePaymentSDK.Link?
+  public let stcBank: MobilePaymentSDK.Link?
+  public init(card: MobilePaymentSDK.Link? = nil, selfLink: MobilePaymentSDK.Link? = nil, auth: MobilePaymentSDK.Link? = nil, savedCard: MobilePaymentSDK.Link? = nil, savedCardPay: MobilePaymentSDK.Link? = nil, delSavedCard: MobilePaymentSDK.Link? = nil, binLookUp: MobilePaymentSDK.Link? = nil, applePay: MobilePaymentSDK.Link? = nil, threeDsUrl: MobilePaymentSDK.Link? = nil, threeDsComplete: MobilePaymentSDK.Link? = nil, tabby: MobilePaymentSDK.Link? = nil, tamara: MobilePaymentSDK.Link? = nil, stcBank: MobilePaymentSDK.Link? = nil)
+  public static func == (a: MobilePaymentSDK.OrderLinks, b: MobilePaymentSDK.OrderLinks) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct RemoteThemeConfig : Swift.Codable, Swift.Equatable, Swift.Hashable {
+  public let light: MobilePaymentSDK.ColorConfig?
+  public let dark: MobilePaymentSDK.ColorConfig?
+  public static func == (a: MobilePaymentSDK.RemoteThemeConfig, b: MobilePaymentSDK.RemoteThemeConfig) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct ColorConfig : Swift.Codable, Swift.Equatable, Swift.Hashable {
+  public let primary: Swift.String?
+  public let default10: Swift.String?
+  public let default0: Swift.String?
+  public let default100: Swift.String?
+  public static func == (a: MobilePaymentSDK.ColorConfig, b: MobilePaymentSDK.ColorConfig) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct FieldSetting : Swift.Codable, Swift.Equatable, Swift.Hashable {
+  public let enabled: Swift.Bool?
+  public let optional: Swift.Bool?
+  public init(enabled: Swift.Bool? = nil, optional: Swift.Bool? = nil)
+  public static func == (a: MobilePaymentSDK.FieldSetting, b: MobilePaymentSDK.FieldSetting) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct OrderFields : Swift.Codable, Swift.Equatable, Swift.Hashable {
+  public let name: MobilePaymentSDK.FieldSetting?
+  public let email: MobilePaymentSDK.FieldSetting?
+  public let addressLineOne: MobilePaymentSDK.FieldSetting?
+  public let addressLineTwo: MobilePaymentSDK.FieldSetting?
+  public let addressLineThree: MobilePaymentSDK.FieldSetting?
+  public let addressCity: MobilePaymentSDK.FieldSetting?
+  public let addressCountry: MobilePaymentSDK.FieldSetting?
+  public let phone: MobilePaymentSDK.FieldSetting?
+  public init(name: MobilePaymentSDK.FieldSetting? = nil, email: MobilePaymentSDK.FieldSetting? = nil, addressLineOne: MobilePaymentSDK.FieldSetting? = nil, addressLineTwo: MobilePaymentSDK.FieldSetting? = nil, addressLineThree: MobilePaymentSDK.FieldSetting? = nil, addressCity: MobilePaymentSDK.FieldSetting? = nil, addressCountry: MobilePaymentSDK.FieldSetting? = nil, phone: MobilePaymentSDK.FieldSetting? = nil)
+  public static func == (a: MobilePaymentSDK.OrderFields, b: MobilePaymentSDK.OrderFields) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct Store : Swift.Codable, Swift.Equatable, Swift.Hashable {
+  public let name: Swift.String?
+  public init(name: Swift.String? = nil)
+  public static func == (a: MobilePaymentSDK.Store, b: MobilePaymentSDK.Store) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct CustomerName : Swift.Codable, Swift.Equatable, Swift.Hashable {
+  public let title: Swift.String?
+  public let firstName: Swift.String?
+  public let lastName: Swift.String?
+  public init(title: Swift.String? = nil, firstName: Swift.String? = nil, lastName: Swift.String? = nil)
+  public static func == (a: MobilePaymentSDK.CustomerName, b: MobilePaymentSDK.CustomerName) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct CustomerAddress : Swift.Codable, Swift.Equatable, Swift.Hashable {
+  public let line1: Swift.String?
+  public let city: Swift.String?
+  public let country: Swift.String?
+  public let phone: Swift.String?
+  public init(line1: Swift.String? = nil, city: Swift.String? = nil, country: Swift.String? = nil, phone: Swift.String? = nil)
+  public static func == (a: MobilePaymentSDK.CustomerAddress, b: MobilePaymentSDK.CustomerAddress) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct Customer : Swift.Codable, Swift.Equatable, Swift.Hashable {
+  public let name: MobilePaymentSDK.CustomerName?
+  public let address: MobilePaymentSDK.CustomerAddress?
+  public let email: Swift.String?
+  public let phone: Swift.String?
+  public init(name: MobilePaymentSDK.CustomerName? = nil, address: MobilePaymentSDK.CustomerAddress? = nil, email: Swift.String? = nil, phone: Swift.String? = nil)
+  public static func == (a: MobilePaymentSDK.Customer, b: MobilePaymentSDK.Customer) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public enum OrderStatus : Swift.String, Swift.Codable, Swift.Equatable, Swift.Hashable {
+  case pending
+  case authorised
+  case paid
+  case cancelled
+  case declined
+  case unknown
+  public init(from decoder: any Swift.Decoder) throws
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public struct Order : Swift.Codable, Swift.Equatable, Swift.Hashable {
+  public let ref: Swift.String
+  public let amount: MobilePaymentSDK.Amount
+  public let status: MobilePaymentSDK.OrderStatus
+  public let allowedPaymentMethods: [MobilePaymentSDK.PaymentMethod]?
+  public let _links: MobilePaymentSDK.OrderLinks?
+  public let payments: [MobilePaymentSDK.PaymentResponse]?
+  public let colors: MobilePaymentSDK.RemoteThemeConfig?
+  public let fields: MobilePaymentSDK.OrderFields?
+  public let store: MobilePaymentSDK.Store?
+  public let customer: MobilePaymentSDK.Customer?
+  public init(ref: Swift.String, amount: MobilePaymentSDK.Amount, allowedPaymentMethods: [MobilePaymentSDK.PaymentMethod], status: MobilePaymentSDK.OrderStatus, _links: MobilePaymentSDK.OrderLinks, payments: [MobilePaymentSDK.PaymentResponse]? = nil, colors: MobilePaymentSDK.RemoteThemeConfig? = nil, fields: MobilePaymentSDK.OrderFields? = nil, store: MobilePaymentSDK.Store? = nil, customer: MobilePaymentSDK.Customer? = nil)
+  public var availablePaymentMethods: [MobilePaymentSDK.PaymentMethod] {
+    get
+  }
+  public var hasCardPayment: Swift.Bool {
+    get
+  }
+  public static func == (a: MobilePaymentSDK.Order, b: MobilePaymentSDK.Order) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct PaymentResponse : Swift.Codable, Swift.Equatable, Swift.Hashable {
+  public static func == (a: MobilePaymentSDK.PaymentResponse, b: MobilePaymentSDK.PaymentResponse) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct ContactInformation : Swift.Equatable, Swift.Hashable, Swift.Codable {
+  public var name: Swift.String
+  public var email: Swift.String
+  public var addressLineOne: Swift.String
+  public var addressLineTwo: Swift.String
+  public var addressLineThree: Swift.String
+  public var addressCity: Swift.String
+  public var addressCountry: Swift.String
+  public var phone: Swift.String
+  public init(name: Swift.String = "", email: Swift.String = "", addressLineOne: Swift.String = "", addressLineTwo: Swift.String = "", addressLineThree: Swift.String = "", addressCity: Swift.String = "", addressCountry: Swift.String = "", phone: Swift.String = "")
+  public static func == (a: MobilePaymentSDK.ContactInformation, b: MobilePaymentSDK.ContactInformation) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public protocol PaymentServiceProtocol {
+  func fetchToken(from url: Swift.String) async throws -> Swift.String
+  func fetchOrder(from url: Swift.String, token: Swift.String) async throws -> MobilePaymentSDK.Order
+  func fetchSavedCards(from url: Swift.String, token: Swift.String) async throws -> MobilePaymentSDK.SavedCardsResponse
+  func postApplePayCryptogram(to url: Swift.String, token: PassKit.PKPaymentToken, billingContact: PassKit.PKContact?, shippingContact: PassKit.PKContact?, authToken: Swift.String) async throws -> MobilePaymentSDK.Order
+  func initTabbyPayment(at url: Swift.String, token: Swift.String, customer: MobilePaymentSDK.RequestCustomer?) async throws -> MobilePaymentSDK.TabbyInitResponse
+  func initTamaraPayment(at url: Swift.String, token: Swift.String, customer: MobilePaymentSDK.RequestCustomer?) async throws -> MobilePaymentSDK.TamaraInitResponse
+  func initStcBankPayment(at url: Swift.String, token: Swift.String, customer: MobilePaymentSDK.RequestCustomer?) async throws -> MobilePaymentSDK.StcBankInitResponse
+  func completeStcBankPayment(at url: Swift.String, token: Swift.String, otp: Swift.String) async throws -> MobilePaymentSDK.Order
+}
+public enum PaymentFlowMode {
+  case checkout
+  case addCard
+  case savedCardPayment
+  case payWithCard
+  public static func == (a: MobilePaymentSDK.PaymentFlowMode, b: MobilePaymentSDK.PaymentFlowMode) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@_Concurrency.MainActor public class RootPaymentCoordinator : Combine.ObservableObject {
+  @_Concurrency.MainActor public var isAddCardFlow: Swift.Bool {
+    get
+  }
+  @_Concurrency.MainActor public init(tokenURL: Swift.String, orderURL: Swift.String, flowMode: MobilePaymentSDK.PaymentFlowMode = .checkout, tokenStorage: any MobilePaymentSDK.TokenStorageProtocol, paymentService: any MobilePaymentSDK.PaymentServiceProtocol, onFinish: @escaping (MobilePaymentSDK.SDKPaymentResponse) -> Swift.Void)
+  @_Concurrency.MainActor public func begin()
+  @_Concurrency.MainActor public func select(_ method: MobilePaymentSDK.PaymentMethod, order: MobilePaymentSDK.Order)
+  @_Concurrency.MainActor public func goToPaymentOptions()
+  @_Concurrency.MainActor public func goBackFromOptions()
+  @_Concurrency.MainActor public func loadThreeDS(for urlString: Swift.String)
+  @_Concurrency.MainActor public func onCompleteThreeDS(status: MobilePaymentSDK.ThreeDSStatus)
+  @_Concurrency.MainActor public func loadTabby(for urlString: Swift.String, completionUrl: Swift.String? = nil)
+  @_Concurrency.MainActor public func onCompleteTabby()
+  @_Concurrency.MainActor public func loadTamara(for urlString: Swift.String, completionUrl: Swift.String? = nil)
+  @_Concurrency.MainActor public func onCompleteTamara()
+  @_Concurrency.MainActor public func finish(with response: MobilePaymentSDK.SDKPaymentResponse)
+  @_Concurrency.MainActor public func retry()
+  @_Concurrency.MainActor public func completeAddCardFlowSuccessfully(message: Swift.String, latestOrder: MobilePaymentSDK.Order? = nil) async
+  public typealias ObjectWillChangePublisher = Combine.ObservableObjectPublisher
+  @objc deinit
+}
+public protocol CardPaymentServiceProtocol {
+  func processPayment(request: MobilePaymentSDK.PaymentRequest, paymentURL: Swift.String) async throws -> MobilePaymentSDK.Order
+  func processSavedCardPayment(request: MobilePaymentSDK.SavedCardPaymentRequest, paymentURL: Swift.String) async throws -> MobilePaymentSDK.Order
+  func deleteSavedCard(link: MobilePaymentSDK.Link) async throws
+}
+@_Concurrency.MainActor @preconcurrency public struct ErrorView : SwiftUICore.View {
+  @_Concurrency.MainActor @preconcurrency public var body: some SwiftUICore.View {
+    get
+  }
+  public typealias Body = @_opaqueReturnTypeOf("$s16MobilePaymentSDK9ErrorViewV4bodyQrvp", 0) __
+}
+public enum PaymentServiceError : Foundation.LocalizedError {
+  case invalidURL
+  case networkError(any Swift.Error)
+  case invalidResponse
+  case serverError(Swift.Int)
+  case decodingError(any Swift.Error)
+  case authenticationFailed
+  case tabbyValidationError(MobilePaymentSDK.TabbyErrorResponse)
+  case tamaraValidationError(MobilePaymentSDK.TamaraErrorResponse)
+  case stcBankValidationError(MobilePaymentSDK.StcBankErrorResponse)
+  public var errorDescription: Swift.String? {
+    get
+  }
+}
+public class PaymentService : MobilePaymentSDK.PaymentServiceProtocol {
+  public init(tokenStorage: any MobilePaymentSDK.TokenStorageProtocol, session: Foundation.URLSession = .shared)
+  public func fetchToken(from url: Swift.String) async throws -> Swift.String
+  public func fetchOrder(from url: Swift.String, token: Swift.String) async throws -> MobilePaymentSDK.Order
+  public func fetchSavedCards(from url: Swift.String, token: Swift.String) async throws -> MobilePaymentSDK.SavedCardsResponse
+  public func postApplePayCryptogram(to url: Swift.String, token: PassKit.PKPaymentToken, billingContact: PassKit.PKContact?, shippingContact: PassKit.PKContact?, authToken: Swift.String) async throws -> MobilePaymentSDK.Order
+  public func initTabbyPayment(at url: Swift.String, token: Swift.String, customer: MobilePaymentSDK.RequestCustomer?) async throws -> MobilePaymentSDK.TabbyInitResponse
+  public func initTamaraPayment(at url: Swift.String, token: Swift.String, customer: MobilePaymentSDK.RequestCustomer?) async throws -> MobilePaymentSDK.TamaraInitResponse
+  public func initStcBankPayment(at url: Swift.String, token: Swift.String, customer: MobilePaymentSDK.RequestCustomer?) async throws -> MobilePaymentSDK.StcBankInitResponse
+  public func completeStcBankPayment(at url: Swift.String, token: Swift.String, otp: Swift.String) async throws -> MobilePaymentSDK.Order
+  @objc deinit
+}
+public enum TamaraStatus : Swift.Int, Swift.CaseIterable, Swift.Codable, Swift.Equatable {
+  case success
+  case failure
+  case cancelled
+  public var status: Swift.String {
+    get
+  }
+  public init?(rawValue: Swift.Int)
+  public typealias AllCases = [MobilePaymentSDK.TamaraStatus]
+  public typealias RawValue = Swift.Int
+  nonisolated public static var allCases: [MobilePaymentSDK.TamaraStatus] {
+    get
+  }
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public struct TamaraInitRequest : Swift.Codable {
+  public let customer: MobilePaymentSDK.RequestCustomer?
+  public init(customer: MobilePaymentSDK.RequestCustomer? = nil)
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct TamaraInitLinks : Swift.Codable {
+  public let redirect: MobilePaymentSDK.Link?
+  public let complete: MobilePaymentSDK.Link?
+  public init(redirect: MobilePaymentSDK.Link? = nil, complete: MobilePaymentSDK.Link? = nil)
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct TamaraInitResponse : Swift.Codable {
+  public let links: MobilePaymentSDK.TamaraInitLinks?
+  public init(links: MobilePaymentSDK.TamaraInitLinks? = nil)
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct TamaraErrorResponse : Swift.Codable {
+  public let code: Swift.Int?
+  public let status: Swift.String?
+  public let reason: Swift.String?
+  public let errors: [Swift.String]
+  public init(code: Swift.Int? = nil, status: Swift.String? = nil, reason: Swift.String? = nil, errors: [Swift.String] = [])
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public class PaymentSDK {
+  public init(configuration: MobilePaymentSDK.PaymentSDKConfiguration = PaymentSDKConfiguration())
+  public static var sdkVersion: Swift.String {
+    get
+  }
+  public func updateConfiguration(_ configuration: MobilePaymentSDK.PaymentSDKConfiguration)
+  @_Concurrency.MainActor public func paymentView(tokenURL: Swift.String, orderURL: Swift.String, onFinish: @escaping (MobilePaymentSDK.SDKPaymentResponse) -> Swift.Void) -> some SwiftUICore.View
+  
+  @_Concurrency.MainActor public func addCardView(tokenURL: Swift.String, orderURL: Swift.String, onFinish: @escaping (MobilePaymentSDK.SDKAddCardResponse) -> Swift.Void) -> some SwiftUICore.View
+  
+  @_Concurrency.MainActor public func payWithCardView(tokenURL: Swift.String, orderURL: Swift.String, onFinish: @escaping (MobilePaymentSDK.SDKPaymentResponse) -> Swift.Void) -> some SwiftUICore.View
+  
+  @_Concurrency.MainActor public func payWithSavedCardView(tokenURL: Swift.String, orderURL: Swift.String, savedCard: MobilePaymentSDK.SDKSavedCardInput, onFinish: @escaping (MobilePaymentSDK.SDKPaymentResponse) -> Swift.Void) -> some SwiftUICore.View
+  
+  @objc deinit
+}
+@_Concurrency.MainActor public class SavedCardsViewModel : Foundation.ObservableObject {
+  @_Concurrency.MainActor public init(order: MobilePaymentSDK.Order, savedCards: MobilePaymentSDK.SavedCardsResponse, cardPaymentService: any MobilePaymentSDK.CardPaymentServiceProtocol, completion: @escaping (MobilePaymentSDK.SDKPaymentResponse) -> Swift.Void)
+  @_Concurrency.MainActor public func processSavedCardPayment(for cardIndex: Swift.Int)
+  @_Concurrency.MainActor public func clearError()
+  @_Concurrency.MainActor public func updateSavedCards(_ newValue: MobilePaymentSDK.SavedCardsResponse)
+  @_Concurrency.MainActor public func deleteSavedCard(at index: Swift.Int, onCompletion: @escaping (Swift.Bool) -> Swift.Void)
+  public typealias ObjectWillChangePublisher = Combine.ObservableObjectPublisher
+  @objc deinit
+}
+public struct SDKSavedCardInput {
+  public let token: Swift.String
+  public let maskedCard: Swift.String
+  public let expiry: Swift.String
+  public let scheme: Swift.String
+  public let maskedName: Swift.String?
+  public init(token: Swift.String, maskedCard: Swift.String, expiry: Swift.String, scheme: Swift.String, maskedName: Swift.String? = nil)
+}
+extension Foundation.Bundle {
+  public static let myFramework: Foundation.Bundle
+}
+public struct PaymentSDKConfiguration {
+  public let debugLoggingEnabled: Swift.Bool
+  public let preferredLanguageCode: Swift.String?
+  public let applePayMerchantIdentifier: Swift.String?
+  public let applePayButtonType: PassKit.PKPaymentButtonType
+  public let applePayButtonStyle: PassKit.PKPaymentButtonStyle
+  public init(debugLoggingEnabled: Swift.Bool = false, preferredLanguageCode: Swift.String? = nil, applePayMerchantIdentifier: Swift.String? = nil, applePayButtonType: PassKit.PKPaymentButtonType = .plain, applePayButtonStyle: PassKit.PKPaymentButtonStyle = .automatic)
+  public struct Builder {
+    public var debugLoggingEnabled: Swift.Bool
+    public var preferredLanguageCode: Swift.String?
+    public var applePayMerchantIdentifier: Swift.String?
+    public var applePayButtonType: PassKit.PKPaymentButtonType
+    public var applePayButtonStyle: PassKit.PKPaymentButtonStyle
+    public init()
+    public func withDebugLoggingEnabled(_ enabled: Swift.Bool) -> MobilePaymentSDK.PaymentSDKConfiguration.Builder
+    public func withPreferredLanguageCode(_ code: Swift.String?) -> MobilePaymentSDK.PaymentSDKConfiguration.Builder
+    public func withApplePayMerchantIdentifier(_ id: Swift.String?) -> MobilePaymentSDK.PaymentSDKConfiguration.Builder
+    public func withApplePayButtonType(_ type: PassKit.PKPaymentButtonType) -> MobilePaymentSDK.PaymentSDKConfiguration.Builder
+    public func withApplePayButtonStyle(_ style: PassKit.PKPaymentButtonStyle) -> MobilePaymentSDK.PaymentSDKConfiguration.Builder
+    public func build() -> MobilePaymentSDK.PaymentSDKConfiguration
+  }
+  public static func builder() -> MobilePaymentSDK.PaymentSDKConfiguration.Builder
+  public init(builder configure: (inout MobilePaymentSDK.PaymentSDKConfiguration.Builder) -> Swift.Void)
+}
+public struct ValidationRules {
+  public static let minCardNumberLength: Swift.Int
+  public static let maxCardNumberLength: Swift.Int
+  public static let minCVVLength: Swift.Int
+  public static let maxCVVLength: Swift.Int
+  public static let minCardholderNameLength: Swift.Int
+  public static let expiryDateRegex: Swift.String
+  public static let cardNumberRegex: Swift.String
+  public static let cvvRegex: Swift.String
+}
+public struct UIConstants {
+  public static let cornerRadius: CoreFoundation.CGFloat
+  public static let buttonHeight: CoreFoundation.CGFloat
+  public static let fieldHeight: CoreFoundation.CGFloat
+  public static let spacing: CoreFoundation.CGFloat
+  public static let smallSpacing: CoreFoundation.CGFloat
+  public static let shadowRadius: CoreFoundation.CGFloat
+  public static let shadowOpacity: Swift.Float
+  public static let formInputFontSize: CoreFoundation.CGFloat
+  public static let errorMessageHeight: CoreFoundation.CGFloat
+}
+public struct ErrorMessages {
+  public static var invalidCardNumber: Swift.String {
+    get
+  }
+  public static var invalidExpiryDate: Swift.String {
+    get
+  }
+  public static var invalidCVV: Swift.String {
+    get
+  }
+  public static var invalidCardholderName: Swift.String {
+    get
+  }
+  public static var networkError: Swift.String {
+    get
+  }
+  public static var serverError: Swift.String {
+    get
+  }
+  public static var authenticationFailed: Swift.String {
+    get
+  }
+  public static var invalidURL: Swift.String {
+    get
+  }
+  public static var paymentFailed: Swift.String {
+    get
+  }
+  public static var pendingTokenExpired: Swift.String {
+    get
+  }
+  public static var pendingConfirmation: Swift.String {
+    get
+  }
+  public static var userCancelled: Swift.String {
+    get
+  }
+  public static var sessionTimedOut: Swift.String {
+    get
+  }
+}
+@_Concurrency.MainActor public class SavedCardPaymentViewModel : Foundation.ObservableObject {
+  @_Concurrency.MainActor public init(order: MobilePaymentSDK.Order, savedCard: MobilePaymentSDK.SDKSavedCardInput, cardPaymentService: any MobilePaymentSDK.CardPaymentServiceProtocol, completion: @escaping (MobilePaymentSDK.SDKPaymentResponse) -> Swift.Void)
+  public typealias ObjectWillChangePublisher = Combine.ObservableObjectPublisher
+  @objc deinit
+}
+public struct SDKPaymentResponse : Swift.Codable, Swift.Equatable {
+  public let success: Swift.Bool
+  public let message: Swift.String
+  public let errorCode: Swift.String?
+  public init(success: Swift.Bool, message: Swift.String, errorCode: Swift.String? = nil)
+  public static func success(message: Swift.String = "Payment processed successfully") -> MobilePaymentSDK.SDKPaymentResponse
+  public static func failure(message: Swift.String, errorCode: Swift.String? = nil) -> MobilePaymentSDK.SDKPaymentResponse
+  public static func == (a: MobilePaymentSDK.SDKPaymentResponse, b: MobilePaymentSDK.SDKPaymentResponse) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public enum ThreeDSStatus : Swift.Int, Swift.CaseIterable, Swift.Codable, Swift.Equatable {
+  case success
+  case failure
+  case cancelled
+  public var status: Swift.String {
+    get
+  }
+  public init?(rawValue: Swift.Int)
+  public typealias AllCases = [MobilePaymentSDK.ThreeDSStatus]
+  public typealias RawValue = Swift.Int
+  nonisolated public static var allCases: [MobilePaymentSDK.ThreeDSStatus] {
+    get
+  }
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+extension MobilePaymentSDK.TabbyStatus : Swift.Hashable {}
+extension MobilePaymentSDK.TabbyStatus : Swift.RawRepresentable {}
+extension MobilePaymentSDK.NewCardPaymentViewModel : Swift.Sendable {}
+extension MobilePaymentSDK.RootView : Swift.Sendable {}
+extension MobilePaymentSDK.PaymentMethodType : Swift.RawRepresentable {}
+extension MobilePaymentSDK.OrderStatus : Swift.RawRepresentable {}
+extension MobilePaymentSDK.PaymentFlowMode : Swift.Equatable {}
+extension MobilePaymentSDK.PaymentFlowMode : Swift.Hashable {}
+extension MobilePaymentSDK.RootPaymentCoordinator : Swift.Sendable {}
+extension MobilePaymentSDK.ErrorView : Swift.Sendable {}
+extension MobilePaymentSDK.TamaraStatus : Swift.Hashable {}
+extension MobilePaymentSDK.TamaraStatus : Swift.RawRepresentable {}
+extension MobilePaymentSDK.SavedCardsViewModel : Swift.Sendable {}
+extension MobilePaymentSDK.SavedCardPaymentViewModel : Swift.Sendable {}
+extension MobilePaymentSDK.ThreeDSStatus : Swift.Hashable {}
+extension MobilePaymentSDK.ThreeDSStatus : Swift.RawRepresentable {}
