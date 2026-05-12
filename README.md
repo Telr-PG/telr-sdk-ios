@@ -31,7 +31,7 @@ The Telr Mobile Payment SDK for iOS is a comprehensive payment solution that ena
 
 ### Key Features
 
-- **Multiple Payment Methods**: Credit/Debit Cards, Apple Pay, Tabby, Tamara, STC Bank
+- **Multiple Payment Methods**: Credit/Debit Cards, Apple Pay, Click to Pay, Tabby, Tamara, STC Bank
 - **3D Secure Support**: Built-in 3DS authentication flow
 - **Saved Cards**: Tokenization and card management
 - **Modern UI**: SwiftUI-based interface with iOS design guidelines
@@ -63,7 +63,7 @@ The Telr Mobile Payment SDK for iOS is a comprehensive payment solution that ena
    inhibit_all_warnings!
    
    target 'YourAppTarget' do
-     pod 'TelrSDK', '~> 4.1.0'
+     pod 'TelrSDK', '~> 4.1.1'
    end
    ```
 
@@ -83,6 +83,8 @@ The Telr Mobile Payment SDK for iOS is a comprehensive payment solution that ena
    ```
 
 #### CocoaPods Troubleshooting
+
+The `TelrSDK` pod is published from [github.com/Telr-PG/telr-sdk-ios](https://github.com/Telr-PG/telr-sdk-ios) and resolves via the standard CocoaPods CDN — no extra source configuration is required. If `pod install` cannot find it, run `pod repo update` and try again.
 
 If you encounter build issues with newer Xcode versions, add this to your Podfile:
 
@@ -124,7 +126,7 @@ let package = Package(
         .iOS(.v15)
     ],
     dependencies: [
-        .package(url: "https://github.com/Telr-PG/telr-sdk-ios.git", .upToNextMajor(from: "4.1.0"))
+        .package(url: "https://github.com/Telr-PG/telr-sdk-ios.git", .upToNextMajor(from: "4.1.1"))
     ],
     targets: [
         .target(
@@ -141,7 +143,7 @@ let package = Package(
 
 1. **Add to Cartfile**:
    ```ogdl
-   binary "https://raw.githubusercontent.com/Telr-PG/telr-sdk-ios/main/MobilePaymentSDK.json" ~> 4.1.0
+   binary "https://raw.githubusercontent.com/Telr-PG/telr-sdk-ios/main/MobilePaymentSDK.json" ~> 4.1.1
    ```
 
 2. **Update dependencies**:
@@ -266,6 +268,9 @@ let paymentSDK = PaymentSDK(configuration: configuration)
 |-----------|------|---------|-------------|
 | `debugLoggingEnabled` | Bool | `false` | Enable debug logging (development only) |
 | `preferredLanguageCode` | String? | `nil` | Override language ("en", "ar") |
+| `applePayMerchantIdentifier` | String? | `nil` | Apple Pay merchant ID (e.g. `merchant.com.yourcompany.yourapp`). Required for Apple Pay to appear. |
+| `applePayButtonType` | `PKPaymentButtonType` | `.plain` | Apple Pay button label (`.buy`, `.checkout`, `.book`, `.donate`, etc.) |
+| `applePayButtonStyle` | `PKPaymentButtonStyle` | `.automatic` | Apple Pay button style (`.black`, `.white`, `.whiteOutline`, `.automatic`) |
 
 ### Runtime Configuration Updates
 
@@ -308,6 +313,12 @@ The SDK supports the following payment methods:
    - Displayed when enabled in the order (`allowedPaymentMethods` / relevant order links)
    - SDK-managed data capture and submission flow
 
+6. **Click to Pay (Mastercard SRC)**
+   - Displayed when your order enables `allowedPaymentMethods.type = CLICK_TO_PAY` (or `order._links.clicktopay.href` is present).
+   - **No SDK configuration or merchant registration required.** `dpaId`, acquirer config, and locale come from the order response — Telr's backend owns the network registration.
+   - The SDK handles consumer recognition, email entry, OTP authentication, saved-card listing, manual card entry, the network DCF challenge UI, and 3DS internally.
+   - Recognition tokens are persisted on-device per `dpaId` so returning users skip the email/OTP step on the next session.
+
 ### Card Payment Features
 
 #### New Card Payment
@@ -333,7 +344,38 @@ Apple Pay is automatically available when:
 - User has cards in Wallet
 - Merchant has Apple Pay enabled
 
+#### Apple Pay Setup
+
+1. **Apple Developer Portal**: Enable Apple Pay for your App ID and create a Merchant Identity Certificate under **Certificates, Identifiers & Profiles > Identifiers > Merchant IDs**.
+2. **Xcode**: Add the **Apple Pay** capability to your target under **Signing & Capabilities** and select your Merchant ID.
+3. **SDK Configuration**: Pass your Merchant Identifier when initializing the SDK:
+
+```swift
+let configuration = PaymentSDKConfiguration.builder()
+    .withApplePayMerchantIdentifier("merchant.com.yourcompany.yourapp")
+    .build()
+
+let paymentSDK = PaymentSDK(configuration: configuration)
+```
+
+You can also customize the Apple Pay button:
+
+```swift
+let configuration = PaymentSDKConfiguration.builder()
+    .withApplePayMerchantIdentifier("merchant.com.yourcompany.yourapp")
+    .withApplePayButtonType(.buy)
+    .withApplePayButtonStyle(.black)
+    .build()
+```
+
 The SDK handles Apple Pay availability detection and presents the option when appropriate.
+
+#### Common reasons Apple Pay does not appear
+
+1. `applePayMerchantIdentifier` not passed to `PaymentSDKConfiguration` (or empty).
+2. Device cannot make Apple Pay payments (`PKPaymentAuthorizationViewController.canMakePayments()` returns `false`) — typically because the device is unsupported or has no cards in Wallet.
+3. The order's `allowedPaymentMethods` does not include `APPLE_PAY` — confirm Apple Pay is enabled on the Telr merchant account.
+4. The order's `_links.applePay.href` is missing.
 
 ## Add Card Flow
 
@@ -789,6 +831,7 @@ public enum PaymentMethodType: String {
     case tabby = "TABBY"
     case tamara = "TAMARA"
     case stcBank = "STC_BANK"
+    case clickToPay = "CLICK_TO_PAY"
 }
 ```
 
@@ -823,7 +866,7 @@ Links to operations/endpoints associated with the order (card, Apple Pay, 3DS, 
 - [Issue Tracker](https://github.com/Telr-PG/telr-sdk-ios/issues)
 
 ### Version Information
-- **Current Version**: 4.1.0
+- **Current Version**: 4.1.1
 - **Minimum iOS Version**: 15.1
 - **Swift Version**: 6.0
 - **Last Updated**: March 2026
