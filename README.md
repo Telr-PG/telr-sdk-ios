@@ -63,7 +63,7 @@ The Telr Mobile Payment SDK for iOS is a comprehensive payment solution that ena
    inhibit_all_warnings!
    
    target 'YourAppTarget' do
-     pod 'TelrSDK', '~> 4.1.1'
+     pod 'TelrSDK', '~> 4.2.0'
    end
    ```
 
@@ -126,7 +126,7 @@ let package = Package(
         .iOS(.v15)
     ],
     dependencies: [
-        .package(url: "https://github.com/Telr-PG/telr-sdk-ios.git", .upToNextMajor(from: "4.1.1"))
+        .package(url: "https://github.com/Telr-PG/telr-sdk-ios.git", .upToNextMajor(from: "4.2.0"))
     ],
     targets: [
         .target(
@@ -143,7 +143,7 @@ let package = Package(
 
 1. **Add to Cartfile**:
    ```ogdl
-   binary "https://raw.githubusercontent.com/Telr-PG/telr-sdk-ios/main/MobilePaymentSDK.json" ~> 4.1.1
+   binary "https://raw.githubusercontent.com/Telr-PG/telr-sdk-ios/main/MobilePaymentSDK.json" ~> 4.2.0
    ```
 
 2. **Update dependencies**:
@@ -313,7 +313,7 @@ The SDK supports the following payment methods:
    - Displayed when enabled in the order (`allowedPaymentMethods` / relevant order links)
    - SDK-managed data capture and submission flow
 
-6. **Click to Pay (Mastercard SRC)**
+6. **Click to Pay**
    - Displayed when your order enables `allowedPaymentMethods.type = CLICK_TO_PAY` (or `order._links.clicktopay.href` is present).
    - **No SDK configuration or merchant registration required.** `dpaId`, acquirer config, and locale come from the order response — Telr's backend owns the network registration.
    - The SDK handles consumer recognition, email entry, OTP authentication, saved-card listing, manual card entry, the network DCF challenge UI, and 3DS internally.
@@ -866,7 +866,7 @@ Links to operations/endpoints associated with the order (card, Apple Pay, 3DS, 
 - [Issue Tracker](https://github.com/Telr-PG/telr-sdk-ios/issues)
 
 ### Version Information
-- **Current Version**: 4.1.1
+- **Current Version**: 4.2.0
 - **Minimum iOS Version**: 15.1
 - **Swift Version**: 6.0
 - **Last Updated**: March 2026
