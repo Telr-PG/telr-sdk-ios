@@ -63,7 +63,7 @@ The Telr Mobile Payment SDK for iOS is a comprehensive payment solution that ena
    inhibit_all_warnings!
    
    target 'YourAppTarget' do
-     pod 'TelrSDK', '~> 4.2.0'
+     pod 'TelrSDK', '~> 4.3.0'
    end
    ```
 
@@ -126,7 +126,7 @@ let package = Package(
         .iOS(.v15)
     ],
     dependencies: [
-        .package(url: "https://github.com/Telr-PG/telr-sdk-ios.git", .upToNextMajor(from: "4.2.0"))
+        .package(url: "https://github.com/Telr-PG/telr-sdk-ios.git", .upToNextMajor(from: "4.3.0"))
     ],
     targets: [
         .target(
@@ -143,7 +143,7 @@ let package = Package(
 
 1. **Add to Cartfile**:
    ```ogdl
-   binary "https://raw.githubusercontent.com/Telr-PG/telr-sdk-ios/main/MobilePaymentSDK.json" ~> 4.2.0
+   binary "https://raw.githubusercontent.com/Telr-PG/telr-sdk-ios/main/MobilePaymentSDK.json" ~> 4.3.0
    ```
 
 2. **Update dependencies**:
@@ -866,7 +866,7 @@ Links to operations/endpoints associated with the order (card, Apple Pay, 3DS, 
 - [Issue Tracker](https://github.com/Telr-PG/telr-sdk-ios/issues)
 
 ### Version Information
-- **Current Version**: 4.2.0
+- **Current Version**: 4.3.0
 - **Minimum iOS Version**: 15.1
 - **Swift Version**: 6.0
 - **Last Updated**: March 2026

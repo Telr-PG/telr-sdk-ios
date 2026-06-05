@@ -19,5 +19,6 @@
   "4.0.1": "https://github.com/Telr-PG/telr-sdk-ios/releases/download/4.0.1/MobilePaymentSDK.xcframework.zip",
   "4.1.0": "https://github.com/Telr-PG/telr-sdk-ios/releases/download/4.1.0/MobilePaymentSDK.xcframework.zip",
   "4.1.1": "https://github.com/Telr-PG/telr-sdk-ios/releases/download/4.1.1/MobilePaymentSDK.xcframework.zip",
-  "4.2.0": "https://github.com/Telr-PG/telr-sdk-ios/releases/download/4.2.0/MobilePaymentSDK.xcframework.zip"
+  "4.2.0": "https://github.com/Telr-PG/telr-sdk-ios/releases/download/4.2.0/MobilePaymentSDK.xcframework.zip",
+  "4.3.0": "https://github.com/Telr-PG/telr-sdk-ios/releases/download/4.3.0/MobilePaymentSDK.xcframework.zip"
 }
