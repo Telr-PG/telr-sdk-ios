@@ -15,8 +15,9 @@ Bring Telr’s trusted payment experience into your iOS app with minimal effort.
 2. [Installation](#installation)
 3. [Quick Start](#quick-start)
 4. [Configuration](#configuration)
-5. [Payment Methods](#payment-methods)
-6. [Add Card Flow](#add-card-flow)
+5. [Custom Colors (Theming)](#custom-colors-theming)
+6. [Payment Methods](#payment-methods)
+7. [Add Card Flow](#add-card-flow)
 7. [Pay with Saved Card Flow](#pay-with-saved-card-flow)
 8. [Pay with Card Flow](#pay-with-card-flow)
 9. [Error Handling](#error-handling)
@@ -63,7 +64,7 @@ The Telr Mobile Payment SDK for iOS is a comprehensive payment solution that ena
    inhibit_all_warnings!
    
    target 'YourAppTarget' do
-     pod 'TelrSDK', '~> 4.3.0'
+     pod 'TelrSDK', '~> 4.4.0'
    end
    ```
 
@@ -126,7 +127,7 @@ let package = Package(
         .iOS(.v15)
     ],
     dependencies: [
-        .package(url: "https://github.com/Telr-PG/telr-sdk-ios.git", .upToNextMajor(from: "4.3.0"))
+        .package(url: "https://github.com/Telr-PG/telr-sdk-ios.git", .upToNextMajor(from: "4.4.0"))
     ],
     targets: [
         .target(
@@ -143,7 +144,7 @@ let package = Package(
 
 1. **Add to Cartfile**:
    ```ogdl
-   binary "https://raw.githubusercontent.com/Telr-PG/telr-sdk-ios/main/MobilePaymentSDK.json" ~> 4.3.0
+   binary "https://raw.githubusercontent.com/Telr-PG/telr-sdk-ios/main/MobilePaymentSDK.json" ~> 4.4.0
    ```
 
 2. **Update dependencies**:
@@ -271,6 +272,7 @@ let paymentSDK = PaymentSDK(configuration: configuration)
 | `applePayMerchantIdentifier` | String? | `nil` | Apple Pay merchant ID (e.g. `merchant.com.yourcompany.yourapp`). Required for Apple Pay to appear. |
 | `applePayButtonType` | `PKPaymentButtonType` | `.plain` | Apple Pay button label (`.buy`, `.checkout`, `.book`, `.donate`, etc.) |
 | `applePayButtonStyle` | `PKPaymentButtonStyle` | `.automatic` | Apple Pay button style (`.black`, `.white`, `.whiteOutline`, `.automatic`) |
+| `colors` | `SDKColorConfig?` | `nil` | Merchant color overrides applied at init. See [Custom Colors (Theming)](#custom-colors-theming). |
 
 ### Runtime Configuration Updates
 
@@ -284,6 +286,57 @@ paymentSDK.updateConfiguration(newConfig)
 ```
 
 **Note**: Views already created with `paymentView` will not automatically pick up configuration changes. Create a new view after updating configuration if you need the new config applied.
+
+## Custom Colors (Theming)
+
+You can theme the SDK's payment UI to match your brand by passing `SDKColorConfig` at init via `.withColors(...)`. Provide `light` and/or `dark` variants; each color is an optional hex string (`"#RRGGBB"` or `"#AARRGGBB"`).
+
+```swift
+let config = PaymentSDKConfiguration.builder()
+    .withColors(SDKColorConfig(
+        light: SDKColors(
+            primary: "#0057FF",              // Pay button, selected tick, checkbox, links, back chevron
+            background: "#FFFFFF",           // payment sheet / surface background
+            textLabel: "#101828",            // primary text (merchant name, amount, method names, card details)
+            border: "#E4E7EC",               // field/card outlines, dividers
+            buttonText: "#FFFFFF",           // text drawn on the Pay button
+            textFieldText: "#101828",        // text the user types into inputs
+            textFieldBackground: "#F2F4F7"   // input field fill
+        ),
+        dark: SDKColors(
+            primary: "#4C8DFF",
+            background: "#101828",
+            textLabel: "#F2F4F7",
+            border: "#344054",
+            buttonText: "#FFFFFF",
+            textFieldText: "#F2F4F7",
+            textFieldBackground: "#1D2939"
+        )
+    ))
+    .build()
+
+let paymentSDK = PaymentSDK(configuration: config)
+```
+
+### Color tokens
+
+| Token | Applies to |
+|-------|-----------|
+| `primary` | Pay button fill, selected radio tick, save-card checkbox, links, back chevron |
+| `background` | Payment sheet / surface background |
+| `textLabel` | Primary text: merchant name, amount, method names, masked card details |
+| `border` | Input-field & card-row outlines, dividers |
+| `buttonText` | Text drawn on the Pay button |
+| `textFieldText` | Text the user types into input fields (also derives placeholder & field icons at reduced opacity) |
+| `textFieldBackground` | Input-field fill |
+
+Two secondary tones are derived automatically (no separate keys): **muted text** (expiry on card rows, section labels, card/delete icons) is `textLabel` at reduced opacity, and **placeholder/hint text** is `textFieldText` at reduced opacity — so they always belong to your palette.
+
+### Precedence
+
+Colors resolve **per token** as: **init colors (`withColors`) → store colors from the Telr backend → SDK default**. Any token you leave `nil` falls through to the next source. If you don't call `.withColors(...)` at all, the SDK uses your store-configured colors, then its built-in defaults.
+
+> Provide both `light` and `dark` if you want full control in both system themes — store colors are applied per-mode and do not cross-fill between modes.
 
 ## Payment Methods
 
@@ -370,6 +423,29 @@ let configuration = PaymentSDKConfiguration.builder()
 
 The SDK handles Apple Pay availability detection and presents the option when appropriate.
 
+#### Dedicated Apple Pay method (your own button)
+
+If you want to show **your own** Apple Pay button (outside the SDK's payment-options screen), call `payWithApplePay`. The SDK owns the full PassKit session — payment sheet, cryptogram post, and Apple Pay 3DS — and returns only the final result. No SDK UI is presented.
+
+```swift
+// Called from your own Apple Pay button's action:
+paymentSDK.payWithApplePay(
+    tokenURL: checkoutTokenURL,
+    orderURL: checkoutOrderURL
+) { response in
+    if response.success {
+        // response.orderRef        — Telr order id (for server-side verification)
+        // response.transactionRef  — transaction reference
+    } else if response.errorCode == "cancelled" {
+        // user cancelled the Apple Pay sheet
+    } else {
+        // show response.message
+    }
+}
+```
+
+Requirements: `applePayMerchantIdentifier` set in the configuration, and an order whose `allowedPaymentMethods` includes Apple Pay with a valid Apple Pay link. Availability (`canMakePayments`, merchant id, order support) is validated internally and surfaced as a failure `SDKPaymentResponse` if unmet — gate your button's visibility on your own `canMakePayments()` check as usual.
+
 #### Common reasons Apple Pay does not appear
 
 1. `applePayMerchantIdentifier` not passed to `PaymentSDKConfiguration` (or empty).
@@ -446,7 +522,7 @@ paymentSDK.payWithSavedCardView(
 
 ## Pay with Card Flow
 
-Use `payWithCardView` when you want to collect card details and process an immediate payment (e.g., gift card purchases) without saving the card.
+Use `payWithCardView` when you want to collect card details and process an immediate payment (e.g., gift card purchases). If the order supports saving cards, the sheet shows an optional **"Save my card details"** checkbox; when the user opts in, the card is saved and the result returns a `savedCard` reference you can reuse later via `payWithSavedCardView`.
 
 ### Merchant-side flow
 
@@ -454,7 +530,7 @@ Use `payWithCardView` when you want to collect card details and process an immed
 2. Merchant backend returns `tokenUrl` + `orderUrl` to the app.
 3. App opens SDK pay-with-card sheet with those URLs.
 4. SDK handles card entry, BIN lookup (including international card blocking), 3DS, and completion callback.
-5. On success callback, the payment is complete.
+5. On success callback, the payment is complete. If the user opted to save the card, `response.savedCard` contains the saved-card reference; persist it (in your DB) to reuse via `payWithSavedCardView`.
 
 ### SwiftUI Example
 
@@ -465,6 +541,9 @@ paymentSDK.payWithCardView(
 ) { response in
     if response.success {
         // payment complete
+        // response.orderRef / response.transactionRef — references for reconciliation
+        // response.savedCard — non-nil if the user ticked "Save my card details";
+        //   store it to reuse the card via payWithSavedCardView
     } else {
         // show response.message
     }
@@ -482,6 +561,9 @@ public struct SDKPaymentResponse {
     public let success: Bool
     public let message: String
     public let errorCode: String?
+    public let orderRef: String?             // Telr order reference (on success)
+    public let transactionRef: String?       // transaction/payment reference (on success)
+    public let savedCard: SDKSavedCardInput?  // set when the user opts to save the card during pay-with-card
 }
 ```
 
@@ -722,6 +804,15 @@ public class PaymentSDK {
         savedCard: SDKSavedCardInput,
         onFinish: @escaping (SDKPaymentResponse) -> Void
     ) -> some View
+
+    // Runs Apple Pay with no SDK UI (for merchant-owned Apple Pay buttons).
+    // Reports the final result only; orderRef/transactionRef populated on success.
+    @MainActor
+    public func payWithApplePay(
+        tokenURL: String,
+        orderURL: String,
+        onFinish: @escaping (SDKPaymentResponse) -> Void
+    )
 }
 ```
 
@@ -748,9 +839,34 @@ public struct SDKPaymentResponse {
     public let success: Bool
     public let message: String
     public let errorCode: String?
-    
+    public let orderRef: String?             // Telr order reference (on success)
+    public let transactionRef: String?       // transaction/payment reference (on success)
+    public let savedCard: SDKSavedCardInput?  // set when the user opts to save the card during pay-with-card
+
     public static func success(message: String) -> SDKPaymentResponse
     public static func failure(message: String, errorCode: String?) -> SDKPaymentResponse
+}
+```
+
+### SDKColorConfig / SDKColors
+
+Merchant color overrides passed at init via `PaymentSDKConfiguration.builder().withColors(...)`. See [Custom Colors (Theming)](#custom-colors-theming).
+
+```swift
+public struct SDKColorConfig {
+    public let light: SDKColors?
+    public let dark: SDKColors?
+    public init(light: SDKColors? = nil, dark: SDKColors? = nil)
+}
+
+public struct SDKColors {
+    public let primary: String?             // Pay button, selected tick, checkbox, links, back chevron
+    public let background: String?          // payment sheet background
+    public let textLabel: String?           // primary text
+    public let border: String?              // field/card outlines, dividers
+    public let buttonText: String?          // text on the Pay button
+    public let textFieldText: String?       // text typed into inputs (also derives placeholder/hint)
+    public let textFieldBackground: String? // input field fill
 }
 ```
 
@@ -866,7 +982,7 @@ Links to operations/endpoints associated with the order (card, Apple Pay, 3DS, 
 - [Issue Tracker](https://github.com/Telr-PG/telr-sdk-ios/issues)
 
 ### Version Information
-- **Current Version**: 4.3.0
+- **Current Version**: 4.4.0
 - **Minimum iOS Version**: 15.1
 - **Swift Version**: 6.0
 - **Last Updated**: March 2026
