@@ -32,7 +32,7 @@ The Telr Mobile Payment SDK for iOS is a comprehensive payment solution that ena
 
 ### Key Features
 
-- **Multiple Payment Methods**: Credit/Debit Cards, Apple Pay, Click to Pay, Tabby, Tamara, STC Bank
+- **Multiple Payment Methods**: Credit/Debit Cards, Apple Pay, Click to Pay, Tabby, Tamara, STC Bank, Aani
 - **3D Secure Support**: Built-in 3DS authentication flow
 - **Saved Cards**: Tokenization and card management
 - **Modern UI**: SwiftUI-based interface with iOS design guidelines
@@ -64,7 +64,7 @@ The Telr Mobile Payment SDK for iOS is a comprehensive payment solution that ena
    inhibit_all_warnings!
    
    target 'YourAppTarget' do
-     pod 'TelrSDK', '~> 4.4.0'
+     pod 'TelrSDK', '~> 4.4.1'
    end
    ```
 
@@ -127,7 +127,7 @@ let package = Package(
         .iOS(.v15)
     ],
     dependencies: [
-        .package(url: "https://github.com/Telr-PG/telr-sdk-ios.git", .upToNextMajor(from: "4.4.0"))
+        .package(url: "https://github.com/Telr-PG/telr-sdk-ios.git", .upToNextMajor(from: "4.4.1"))
     ],
     targets: [
         .target(
@@ -144,7 +144,7 @@ let package = Package(
 
 1. **Add to Cartfile**:
    ```ogdl
-   binary "https://raw.githubusercontent.com/Telr-PG/telr-sdk-ios/main/MobilePaymentSDK.json" ~> 4.4.0
+   binary "https://raw.githubusercontent.com/Telr-PG/telr-sdk-ios/main/MobilePaymentSDK.json" ~> 4.4.1
    ```
 
 2. **Update dependencies**:
@@ -192,6 +192,8 @@ struct PaymentView: View {
                 onFinish: { response in
                     if response.success {
                         print("Payment successful: \(response.message)")
+                    } else if response.errorCode == "payment_pending" {
+                        print("Payment pending for order: \(response.orderRef ?? "Unknown")")
                     } else {
                         print("Payment failed: \(response.message)")
                     }
@@ -220,6 +222,8 @@ class PaymentViewController: UIViewController {
                 DispatchQueue.main.async {
                     if response.success {
                         self.showAlert(title: "Success", message: response.message)
+                    } else if response.errorCode == "payment_pending" {
+                        self.showAlert(title: "Pending", message: response.message)
                     } else {
                         self.showAlert(title: "Error", message: response.message)
                     }
@@ -366,11 +370,37 @@ The SDK supports the following payment methods:
    - Displayed when enabled in the order (`allowedPaymentMethods` / relevant order links)
    - SDK-managed data capture and submission flow
 
-6. **Click to Pay**
+6. **Aani**
+   - Displayed when the order enables `allowedPaymentMethods.type = AANI` and provides the required Aani links.
+   - Supports an Aani-registered mobile number or email proxy.
+   - The SDK initializes the request and polls the order while the customer approves it in the Aani app.
+
+7. **Click to Pay**
    - Displayed when your order enables `allowedPaymentMethods.type = CLICK_TO_PAY` (or `order._links.clicktopay.href` is present).
    - **No SDK configuration or merchant registration required.** `dpaId`, acquirer config, and locale come from the order response — Telr's backend owns the network registration.
    - The SDK handles consumer recognition, email entry, OTP authentication, saved-card listing, manual card entry, the network DCF challenge UI, and 3DS internally.
    - Recognition tokens are persisted on-device per `dpaId` so returning users skip the email/OTP step on the next session.
+
+### Aani Pending Results
+
+After Aani initialization, the SDK shows a waiting sheet and polls for up to five minutes. The customer can select **Close** instead of waiting. Closing the SDK does not cancel the Aani request; the customer may still approve it in the Aani app.
+
+For compatibility, iOS reports this pending outcome through the existing response fields:
+
+```swift
+if response.success {
+    // Payment completed successfully.
+} else if response.errorCode == "payment_pending" {
+    // Payment is pending, not failed or cancelled.
+    // Reconcile using response.orderRef and your webhook/order-status API.
+    let orderRef = response.orderRef
+    let transactionRef = response.transactionRef // May be nil until processing advances.
+} else {
+    // Payment failed or was cancelled.
+}
+```
+
+Do not start another payment for the same order until your backend confirms its final status. Use `orderRef` as the reliable reconciliation key; `transactionRef` is included only when it is already available.
 
 ### Card Payment Features
 
@@ -561,8 +591,8 @@ public struct SDKPaymentResponse {
     public let success: Bool
     public let message: String
     public let errorCode: String?
-    public let orderRef: String?             // Telr order reference (on success)
-    public let transactionRef: String?       // transaction/payment reference (on success)
+    public let orderRef: String?             // Telr order reference (on success or pending when available)
+    public let transactionRef: String?       // transaction/payment reference (on success or pending when available)
     public let savedCard: SDKSavedCardInput?  // set when the user opts to save the card during pay-with-card
 }
 ```
@@ -582,7 +612,20 @@ public struct SDKAddCardResponse {
 
 ### Common Error Scenarios
 
+#### Pending Payments
+
+```swift
+.onFinish { response in
+    if response.errorCode == "payment_pending" {
+        // Pending: do not show a failure or start another payment.
+        // Reconcile using response.orderRef and your webhook/order-status API.
+        return
+    }
+}
+```
+
 #### Network and Server Errors
+
 ```swift
 .onFinish { response in
     if !response.success {
@@ -605,8 +648,14 @@ public struct SDKAddCardResponse {
 ```
 
 #### Payment Failures
+
 ```swift
 .onFinish { response in
+    if response.errorCode == "payment_pending" {
+        // Pending: reconcile response.orderRef before allowing another payment.
+        return
+    }
+
     if !response.success {
         // Payment failed
         print("Payment failed: \(response.message)")
@@ -626,8 +675,11 @@ public struct SDKAddCardResponse {
 
 | Error Code | Description | Action Required |
 |------------|-------------|-----------------|
+| `payment_pending` | Payment outcome is pending/unconfirmed | Reconcile using `orderRef` and webhook/order-status API |
 | `timeout` | SDK session timed out | Retry checkout |
 | `<gateway_code>` | Code returned by payment backend/order response | Log and map to merchant-friendly message |
+
+> `payment_pending` is the semantic iOS SDK code for an unconfirmed asynchronous payment. It is not a failure or cancellation.
 
 ## Internationalization
 
@@ -839,8 +891,8 @@ public struct SDKPaymentResponse {
     public let success: Bool
     public let message: String
     public let errorCode: String?
-    public let orderRef: String?             // Telr order reference (on success)
-    public let transactionRef: String?       // transaction/payment reference (on success)
+    public let orderRef: String?             // Telr order reference (on success or pending when available)
+    public let transactionRef: String?       // transaction/payment reference (on success or pending when available)
     public let savedCard: SDKSavedCardInput?  // set when the user opts to save the card during pay-with-card
 
     public static func success(message: String) -> SDKPaymentResponse
@@ -932,7 +984,7 @@ Supported payment method entry returned with an order.
 ```swift
 public struct PaymentMethod {
     public let schemes: [String]          // e.g. ["VISA", "MASTERCARD"]
-    public let type: PaymentMethodType    // .card, .applePay, .tabby, .stcBank
+    public let type: PaymentMethodType    // .card, .applePay, .tabby, .stcBank, .aani
 }
 ```
 
@@ -948,6 +1000,7 @@ public enum PaymentMethodType: String {
     case tamara = "TAMARA"
     case stcBank = "STC_BANK"
     case clickToPay = "CLICK_TO_PAY"
+    case aani = "AANI"
 }
 ```
 
@@ -982,7 +1035,7 @@ Links to operations/endpoints associated with the order (card, Apple Pay, 3DS, 
 - [Issue Tracker](https://github.com/Telr-PG/telr-sdk-ios/issues)
 
 ### Version Information
-- **Current Version**: 4.4.0
+- **Current Version**: 4.4.1
 - **Minimum iOS Version**: 15.1
 - **Swift Version**: 6.0
 - **Last Updated**: March 2026
