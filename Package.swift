@@ -11,8 +11,8 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "MobilePaymentSDK",
-            url: "https://github.com/Telr-PG/telr-sdk-ios/releases/download/4.4.2/MobilePaymentSDK.xcframework.zip",
-            checksum: "673ef8b2c4b341b2e2a6ac95fd5ffeab13de5c4b07229d5148d1c71d172424c4"
+            url: "https://github.com/Telr-PG/telr-sdk-ios/releases/download/4.4.3/MobilePaymentSDK.xcframework.zip",
+            checksum: "cf71be57559dff214e807881f02236bbc4ce4baf8b977dc0dc931766d3c0dd5b"
         )
     ]
 )

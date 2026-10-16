@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Click to Pay</title>
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: transparent; }
+  #parent { width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+<script>window.CTP_DEBUG = {{DEBUG}};</script>
+<script src="https://{{LIB_HOST}}/srci/merchant/2/lib.js?dpaId={{DPA_ID}}&locale={{LOCALE}}"></script>
+<script src="native-bridge.js" type="text/javascript"></script>
+
+<div id="parent">
+  <iframe id="dcfLaunch"
+          style="width: 100%; height: 100%; position: fixed; top: 0; left: 0; z-index: 1000000; border: 0; display: none;"
+          src="about:blank"></iframe>
+</div>
+</body>
+</html>
